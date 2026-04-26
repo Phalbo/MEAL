@@ -218,11 +218,13 @@ function bindControls() {
     await loadSchedule(); renderCalendar(); updateBottom();
   });
 
-  document.getElementById('btn-share-list').addEventListener('click', () => {
-    const base = location.href.replace(/\/[^/]*$/, '/');
-    const url  = `${base}lista.php?week=${state.week}`;
+  document.getElementById('btn-share-list').addEventListener('click', async () => {
+    const data = await get('family_share_token');
+    if (data.error) { showToast('⚠️ ' + data.error); return; }
+    const base = location.href.replace(/[^/]*$/, '');
+    const url  = `${base}lista_pub.php?token=${data.token}&week=${state.week}`;
     navigator.clipboard.writeText(url)
-      .then(() => showToast('🔗 Link lista copiato'))
+      .then(() => showToast('🔗 Link condivisione copiato'))
       .catch(() => showToast('⚠️ Copia non supportata'));
   });
 

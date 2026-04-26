@@ -130,6 +130,9 @@ function initSchema(PDO $pdo): void {
         unit_weights TEXT DEFAULT '{}'
     )");
 
+    // Migration: share_token (safe on existing DB)
+    try { $pdo->exec("ALTER TABLE families ADD COLUMN share_token TEXT UNIQUE"); } catch (Exception $e) {}
+
     // Seed categorie
     $pdo->exec("INSERT OR IGNORE INTO meal_categories (id, name, emoji) VALUES
         (1,'Colazione','☀️'),

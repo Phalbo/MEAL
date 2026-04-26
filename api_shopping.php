@@ -92,14 +92,58 @@ function apiShoppingList(PDO $pdo): never {
     if (!$weekStart) respondError('week_start obbligatorio');
 
     $since = $_GET['since'] ?? null;
-    $sql   = "SELECT * FROM shopping_items WHERE family_id=? AND week_start=?";
+    $sql   = "SELECT si.*, u.avatar_emoji as checked_by_emoji
+              FROM shopping_items si
+              LEFT JOIN users u ON u.id = si.checked_by
+              WHERE si.family_id=? AND si.week_start=?";
     $par   = [$familyId, $weekStart];
-    if ($since) { $sql .= " AND checked_at >= ?"; $par[] = $since; }
-    $sql .= " ORDER BY zone_order, ingredient_name";
+    if ($since) { $sql .= " AND si.checked_at >= ?"; $par[] = $since; }
+    $sql .= " ORDER BY si.zone_order, si.ingredient_name";
 
     $st = $pdo->prepare($sql);
     $st->execute($par);
     respond($st->fetchAll());
+}
+
+function apiShoppingListPub(PDO $pdo): never {
+    $token     = $_GET['token'] ?? '';
+    $weekStart = $_GET['week_start'] ?? '';
+    if (!$token || !$weekStart) respondError('token e week_start obbligatori');
+
+    $fam = $pdo->prepare("SELECT id FROM families WHERE share_token=?");
+    $fam->execute([$token]);
+    $family = $fam->fetch();
+    if (!$family) respondError('Token non valido', 403);
+
+    $since = $_GET['since'] ?? null;
+    $sql   = "SELECT si.*, u.avatar_emoji as checked_by_emoji
+              FROM shopping_items si
+              LEFT JOIN users u ON u.id = si.checked_by
+              WHERE si.family_id=? AND si.week_start=?";
+    $par   = [$family['id'], $weekStart];
+    if ($since) { $sql .= " AND si.checked_at >= ?"; $par[] = $since; }
+    $sql  .= " ORDER BY si.zone_order, si.ingredient_name";
+
+    $st = $pdo->prepare($sql);
+    $st->execute($par);
+    respond($st->fetchAll());
+}
+
+function apiShoppingCheckPub(PDO $pdo, array $in): never {
+    $token   = $in['token']   ?? '';
+    $id      = (int)($in['id'] ?? 0);
+    $checked = (int)($in['checked'] ?? 0);
+    if (!$token || !$id) respondError('token e id obbligatori');
+
+    $fam = $pdo->prepare("SELECT id FROM families WHERE share_token=?");
+    $fam->execute([$token]);
+    $family = $fam->fetch();
+    if (!$family) respondError('Token non valido', 403);
+
+    $at = $checked ? date('Y-m-d H:i:s') : null;
+    $pdo->prepare("UPDATE shopping_items SET checked=?, checked_by=NULL, checked_at=? WHERE id=? AND family_id=?")
+        ->execute([$checked, $at, $id, $family['id']]);
+    respond(['success' => true]);
 }
 
 function apiShoppingCheck(PDO $pdo, array $in): never {
