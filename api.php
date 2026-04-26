@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pdo = getDB();
 
 // Public (no auth, no CSRF)
-$public = ['login', 'register'];
+$public = ['login', 'register', 'shopping_list_pub', 'shopping_check_pub'];
 // Auth required but no family needed
 $noFamily = ['logout', 'me', 'csrf_token', 'family_create', 'family_join'];
 
@@ -112,6 +112,7 @@ match ($action) {
     'intolerance_add'             => apiIntoleranceAdd($pdo, $input),
     'intolerance_delete'          => apiIntoleranceDelete($pdo, $input),
     'intolerance_list_by_profile' => apiIntoleranceListByProfile($pdo),
+    'family_share_token'          => apiGetShareToken($pdo),
     'categories_list'      => apiCategoriesList($pdo),
     'meals_list'           => apiMealsList($pdo),
     'meals_add'            => apiMealsAdd($pdo, $input),
@@ -129,5 +130,7 @@ match ($action) {
     'shopping_price_update'=> apiShoppingPriceUpdate($pdo, $input),
     'shopping_reset_checks' => apiShoppingResetChecks($pdo, $input),
     'shopping_export_text'  => apiShoppingExportText($pdo),
+    'shopping_list_pub'     => apiShoppingListPub($pdo),
+    'shopping_check_pub'    => apiShoppingCheckPub($pdo, $input),
     default                => respondError('Azione non riconosciuta', 404),
 };

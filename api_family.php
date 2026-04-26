@@ -149,6 +149,18 @@ function apiIntoleranceDelete(PDO $pdo, array $in): never {
     respond(['success' => true]);
 }
 
+function apiGetShareToken(PDO $pdo): never {
+    $familyId = $_SESSION['family_id'];
+    $st = $pdo->prepare("SELECT share_token FROM families WHERE id=?");
+    $st->execute([$familyId]);
+    $token = $st->fetchColumn();
+    if (!$token) {
+        $token = bin2hex(random_bytes(16));
+        $pdo->prepare("UPDATE families SET share_token=? WHERE id=?")->execute([$token, $familyId]);
+    }
+    respond(['token' => $token]);
+}
+
 function apiIntoleranceListByProfile(PDO $pdo): never {
     $profileId = (int)($_GET['profile_id'] ?? 0);
     if (!$profileId) respondError('profile_id obbligatorio');
