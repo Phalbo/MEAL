@@ -20,12 +20,12 @@ function apiMealsList(PDO $pdo): never {
     $sql    = "SELECT m.*, mc.name as category, mc.emoji as category_emoji
                FROM meals m
                LEFT JOIN meal_categories mc ON mc.id = m.category_id
-               WHERE m.family_id = ?";
+               WHERE (m.family_id = ? OR m.is_system = 1)";
     $params = [$familyId];
 
     if ($categoryId) { $sql .= " AND m.category_id=?"; $params[] = $categoryId; }
     if ($q)          { $sql .= " AND LOWER(m.name) LIKE ?"; $params[] = '%'.mb_strtolower($q).'%'; }
-    $sql .= " ORDER BY mc.id, m.name";
+    $sql .= " ORDER BY m.is_system ASC, mc.id, m.name";
 
     $st = $pdo->prepare($sql);
     $st->execute($params);
