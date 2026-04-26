@@ -122,10 +122,12 @@ match ($action) {
     'schedule_set'         => apiScheduleSet($pdo, $input),
     'schedule_clear'       => apiScheduleClear($pdo, $input),
     'schedule_exception'   => apiScheduleException($pdo, $input),
+    'schedule_copy'        => apiScheduleCopy($pdo, $input),
     'shopping_generate'    => apiShoppingGenerate($pdo, $input),
     'shopping_list'        => apiShoppingList($pdo),
     'shopping_check'       => apiShoppingCheck($pdo, $input),
     'shopping_price_update'=> apiShoppingPriceUpdate($pdo, $input),
-    'shopping_reset_checks'=> apiShoppingResetChecks($pdo, $input),
+    'shopping_reset_checks' => apiShoppingResetChecks($pdo, $input),
+    'shopping_export_text'  => apiShoppingExportText($pdo),
     default                => respondError('Azione non riconosciuta', 404),
 };

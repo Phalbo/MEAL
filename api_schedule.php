@@ -64,6 +64,30 @@ function apiScheduleClear(PDO $pdo, array $in): never {
     respond(['success' => true]);
 }
 
+function apiScheduleCopy(PDO $pdo, array $in): never {
+    $familyId = $_SESSION['family_id'];
+    $fromWeek = $in['from_week'] ?? '';
+    $toWeek   = $in['to_week']   ?? '';
+    if (!$fromWeek || !$toWeek) respondError('from_week e to_week obbligatori');
+    if ($fromWeek === $toWeek) respondError('Le settimane devono essere diverse');
+
+    $src = $pdo->prepare("SELECT day_index, slot, meal_id FROM schedule
+        WHERE family_id=? AND week_start=? AND meal_id IS NOT NULL");
+    $src->execute([$familyId, $fromWeek]);
+    $rows = $src->fetchAll();
+    if (!$rows) respond(['copied' => 0]);
+
+    $pdo->prepare("DELETE FROM schedule WHERE family_id=? AND week_start=?")
+        ->execute([$familyId, $toWeek]);
+
+    $ins = $pdo->prepare("INSERT INTO schedule (family_id, week_start, day_index, slot, meal_id, created_by)
+        VALUES (?,?,?,?,?,?)");
+    foreach ($rows as $row)
+        $ins->execute([$familyId, $toWeek, $row['day_index'], $row['slot'], $row['meal_id'], $_SESSION['user_id']]);
+
+    respond(['copied' => count($rows)]);
+}
+
 function apiScheduleException(PDO $pdo, array $in): never {
     $scheduleId    = (int)($in['schedule_id']    ?? 0);
     $exceptionNote = trim($in['exception_note']  ?? '');

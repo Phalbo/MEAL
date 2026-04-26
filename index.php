@@ -20,6 +20,7 @@ $csrf = $_SESSION['csrf_token'];
 <body>
 
 <header class="topbar">
+  <button id="btn-menu" class="btn-hamburger" aria-label="Apri menu">☰</button>
   <div class="topbar-brand">
     <span class="brand-emoji">🍽️</span>
     <span class="brand-name">Meal Planner</span>
@@ -28,6 +29,7 @@ $csrf = $_SESSION['csrf_token'];
     <a href="index.php"  class="nav-link active">Pianifica</a>
     <a href="admin.php"  class="nav-link">Admin</a>
     <a href="family.php" class="nav-link">Famiglia</a>
+    <a id="nav-lista" href="lista.php" class="nav-link">🛒 Lista spesa</a>
   </nav>
   <div class="topbar-user">
     <span id="user-label" class="user-label"></span>
@@ -64,7 +66,8 @@ $csrf = $_SESSION['csrf_token'];
           <h2 id="week-label">Settimana</h2>
           <button id="btn-next-week" class="btn-ghost">›</button>
         </div>
-        <div style="display:flex;gap:.5rem">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button id="btn-copy-week" class="btn-ghost" title="Copia piano dalla settimana precedente">📋 Copia sett.</button>
           <button id="btn-clear-all" class="btn-ghost">🗑 Svuota</button>
           <button id="btn-gen-shopping" class="btn-ghost">🛒 Genera lista</button>
         </div>
@@ -84,6 +87,7 @@ $csrf = $_SESSION['csrf_token'];
       <section class="shopping-section">
         <div class="section-header">
           <h2>🛒 Lista della spesa</h2>
+          <button id="btn-share-list" class="btn-ghost">🔗 Condividi</button>
           <button id="btn-copy-list" class="btn-ghost">📋 Copia</button>
         </div>
         <div id="shopping-list" class="shopping-list">
@@ -95,6 +99,7 @@ $csrf = $_SESSION['csrf_token'];
   </main>
 </div>
 
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
 <div id="toast" class="toast"></div>
 <script src="app.js"></script>
 <script src="app_ui.js"></script>

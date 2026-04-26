@@ -35,8 +35,8 @@ function makeCell(dayIndex, slotIndex) {
       <span class="cell-emoji">${meal.emoji}</span>
       <span class="cell-name">${meal.name}</span>
       <span class="cell-cal">${meal.cal_per_adult} kcal</span>
-      ${conflict        ? `<span class="cell-alert" title="Contiene allergeni per un profilo">🚨</span>` : ''}
-      ${meal.exception_note ? `<span class="cell-exception" title="${meal.exception_note}">📝</span>` : ''}
+      ${conflict ? `<span class="cell-alert" title="Contiene allergeni per un profilo">🚨</span>` : ''}
+      <button class="cell-exc-btn" title="Nota eccezione">📝</button>
       <button class="cell-remove" title="Rimuovi">×</button>`;
 
     inner.addEventListener('dragstart', e => {
@@ -55,6 +55,45 @@ function makeCell(dayIndex, slotIndex) {
       renderCalendar(); updateBottom();
     });
     cell.appendChild(inner);
+
+    // ── Exception form ────────────────────────────────
+    const excWrap = document.createElement('div');
+    excWrap.className = 'exc-wrap';
+    if (meal.exception_note) {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'exc-note';
+      noteEl.title = meal.exception_note;
+      noteEl.textContent = '📝 ' + meal.exception_note;
+      excWrap.appendChild(noteEl);
+    }
+    const excForm = document.createElement('div');
+    excForm.className = 'exc-form';
+    excForm.innerHTML = `
+      <textarea class="exc-input" rows="2" placeholder="Nota eccezione…">${meal.exception_note||''}</textarea>
+      <div class="exc-actions">
+        <button class="exc-save">Salva</button>
+        <button class="exc-cancel">Annulla</button>
+      </div>`;
+    excWrap.appendChild(excForm);
+
+    inner.querySelector('.cell-exc-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      excForm.classList.toggle('active');
+    });
+    excForm.querySelector('.exc-save').addEventListener('click', async e => {
+      e.stopPropagation();
+      const note = excForm.querySelector('.exc-input').value.trim();
+      if (!meal.schedule_id) return;
+      await post('schedule_exception', { schedule_id: meal.schedule_id, exception_note: note, is_exception: note ? 1 : 0 });
+      state.schedule[key].exception_note = note;
+      renderCalendar();
+    });
+    excForm.querySelector('.exc-cancel').addEventListener('click', e => {
+      e.stopPropagation();
+      excForm.classList.remove('active');
+    });
+    cell.appendChild(excWrap);
+
   } else {
     cell.appendChild(el('span', 'cell-placeholder', '+'));
   }
@@ -126,42 +165,100 @@ function updateCalories() {
 }
 
 // ── Shopping list ─────────────────────────────────────────────────────────────
+let shoppingView = 'list'; // 'list' | 'grid'
+
 function renderShoppingList(items) {
   const container = document.getElementById('shopping-list');
   container.innerHTML = '';
   if (!items.length) {
     container.innerHTML = '<p class="shopping-empty">Nessun ingrediente in calendario.</p>'; return;
   }
-  // raggruppa per zona
+
+  // toggle bar + totale
+  const totalEst  = items.reduce((s, it) => s + (parseFloat(it.price_est) || 0), 0);
+  const totalReal = items.reduce((s, it) => s + (parseFloat(it.price_actual) || 0), 0);
+  const bar = document.createElement('div');
+  bar.className = 'shopping-toolbar';
+  bar.innerHTML = `
+    <div class="shop-total">
+      💰 Stimato: <strong>€${totalEst.toFixed(2)}</strong>
+      ${totalReal > 0 ? ` &nbsp;|&nbsp; Reale: <strong>€${totalReal.toFixed(2)}</strong>` : ''}
+    </div>
+    <div class="shop-toggle">
+      <button class="toggle-btn ${shoppingView==='list'?'active':''}" data-view="list">☰ Lista</button>
+      <button class="toggle-btn ${shoppingView==='grid'?'active':''}" data-view="grid">⊞ Riquadri</button>
+    </div>`;
+  bar.querySelectorAll('.toggle-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      shoppingView = btn.dataset.view;
+      renderShoppingList(items);
+    })
+  );
+  container.appendChild(bar);
+
+  if (shoppingView === 'grid') {
+    renderShoppingGrid(items, container);
+  } else {
+    renderShoppingListView(items, container);
+  }
+}
+
+function renderShoppingListView(items, container) {
   const zones = {};
-  items.forEach(it => {
-    const z = it.zone || 'scaffali';
-    if (!zones[z]) zones[z] = [];
-    zones[z].push(it);
-  });
-  const zoneEmoji = { ortofrutta:'🥦', pane:'🥖', macelleria:'🥩', pesce:'🐟',
-                      latticini:'🧀', scaffali:'🛒', bevande:'🍾', surgelati:'❄️', altro:'📦' };
+  items.forEach(it => { const z = it.zone||'scaffali'; (zones[z]??=[]).push(it); });
+  const zoneEmoji = { ortofrutta:'🥦',pane:'🥖',macelleria:'🥩',pesce:'🐟',
+                      latticini:'🧀',scaffali:'🛒',bevande:'🍾',surgelati:'❄️',altro:'📦' };
   Object.entries(zones).forEach(([zone, zItems]) => {
     const group = document.createElement('div');
     group.className = 'shopping-group';
     group.innerHTML = `<div class="shopping-group-title">${zoneEmoji[zone]||'📦'} ${zone}</div>`;
     zItems.forEach(it => {
       const item = document.createElement('div');
-      item.className = 'shopping-item';
+      item.className = 'shopping-item' + (it.checked ? ' checked' : '');
       item.dataset.id = it.id;
+      const price = it.price_actual ? `€${parseFloat(it.price_actual).toFixed(2)}`
+                  : it.price_est   ? `~€${parseFloat(it.price_est).toFixed(2)}` : '';
       item.innerHTML = `
-        <input type="checkbox" class="shopping-check" ${it.checked ? 'checked' : ''}>
+        <input type="checkbox" class="shopping-check" ${it.checked?'checked':''}>
         <span class="shopping-text">${it.ingredient_name}</span>
-        ${it.quantity ? `<span class="shopping-qty">${it.quantity}${it.unit||''}</span>` : ''}`;
-      if (it.checked) item.classList.add('checked');
+        ${it.quantity ? `<span class="shopping-qty">${it.quantity}${it.unit||''}</span>` : ''}
+        ${price ? `<span class="shopping-price">${price}</span>` : ''}
+        <input type="number" class="price-input" placeholder="€ reale" step="0.01" min="0"
+               value="${it.price_actual||''}" title="Inserisci prezzo reale">`;
       item.querySelector('.shopping-check').addEventListener('change', async function() {
         item.classList.toggle('checked', this.checked);
-        await post('shopping_check', { id: it.id, checked: this.checked ? 1 : 0 });
+        await post('shopping_check', {id: it.id, checked: this.checked?1:0});
+        it.checked = this.checked ? 1 : 0;
+      });
+      item.querySelector('.price-input').addEventListener('change', async function() {
+        const price = parseFloat(this.value) || 0;
+        await post('shopping_price_update', {id: it.id, price_actual: price});
+        it.price_actual = price;
+        renderShoppingList(items); // refresh totale
       });
       group.appendChild(item);
     });
     container.appendChild(group);
   });
+}
+
+function renderShoppingGrid(items, container) {
+  const grid = document.createElement('div');
+  grid.className = 'shopping-grid';
+  items.forEach(it => {
+    const card = document.createElement('div');
+    card.className = 'shop-grid-card' + (it.checked ? ' checked' : '');
+    card.innerHTML = `
+      <span class="shop-grid-name">${it.ingredient_name}</span>
+      ${it.quantity ? `<span class="shop-grid-qty">${it.quantity}${it.unit||''}</span>` : ''}`;
+    card.addEventListener('click', async () => {
+      it.checked = it.checked ? 0 : 1;
+      await post('shopping_check', {id: it.id, checked: it.checked});
+      card.classList.toggle('checked', !!it.checked);
+    });
+    grid.appendChild(card);
+  });
+  container.appendChild(grid);
 }
 
 function copyShoppingList() {
