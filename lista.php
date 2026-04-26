@@ -33,6 +33,8 @@ $weekStart = $_GET['week'] ?? date('Y-m-d', strtotime('monday this week'));
   </div>
   <div class="lista-header-actions">
     <span id="lista-total" class="lista-total"></span>
+    <span id="last-update" class="last-update">—</span>
+    <button id="btn-refresh" class="lista-btn-primary">🔄 Aggiorna</button>
     <button id="btn-reset" class="lista-btn-ghost">↺ Deseleziona tutto</button>
   </div>
 </header>
@@ -48,9 +50,10 @@ const WEEK      = '<?= htmlspecialchars($weekStart) ?>';
 const ZONE_EMOJI = { ortofrutta:'🥦',pane:'🥖',macelleria:'🥩',pesce:'🐟',
                      latticini:'🧀',scaffali:'🛒',bevande:'🍾',surgelati:'❄️',altro:'📦' };
 
-let items    = [];
+let items     = [];
 let lastSince = null;
-let polling  = null;
+let lastLoadAt = null;   // timestamp Date dell'ultimo caricamento
+let ticker    = null;    // intervallo per "X secondi fa"
 
 async function apiFetch(action, params={}) {
   const qs = new URLSearchParams({action, ...params});
@@ -67,26 +70,47 @@ function formatWeek(w) {
   return `${d.toLocaleDateString('it-IT',{day:'numeric',month:'short'})} – ${end.toLocaleDateString('it-IT',{day:'numeric',month:'short'})}`;
 }
 
-async function loadFull() {
-  const data = await apiFetch('shopping_list', {week_start: WEEK});
-  items = Array.isArray(data) ? data : [];
-  lastSince = new Date().toISOString().replace('T',' ').slice(0,19);
-  render();
+function updateLastUpdateLabel() {
+  if (!lastLoadAt) return;
+  const sec = Math.floor((Date.now() - lastLoadAt) / 1000);
+  const el  = document.getElementById('last-update');
+  if (sec < 60)  el.textContent = `Aggiornato ${sec}s fa`;
+  else           el.textContent = `Aggiornato ${Math.floor(sec/60)}m fa`;
 }
 
-async function pollDelta() {
+async function loadFull() {
+  const data = await apiFetch('shopping_list', {week_start: WEEK});
+  items      = Array.isArray(data) ? data : [];
+  lastSince  = new Date().toISOString().replace('T',' ').slice(0,19);
+  lastLoadAt = Date.now();
+  setBadge(true);
+  render();
+  updateLastUpdateLabel();
+}
+
+async function refresh() {
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true;
+  btn.textContent = '⏳';
   try {
     const delta = await apiFetch('shopping_list', {week_start: WEEK, since: lastSince});
-    if (!Array.isArray(delta) || !delta.length) return setBadge(true);
-    const now = new Date().toISOString().replace('T',' ').slice(0,19);
-    delta.forEach(upd => {
-      const idx = items.findIndex(i => i.id === upd.id);
-      if (idx >= 0) items[idx] = {...items[idx], ...upd};
-    });
-    lastSince = now;
-    render();
+    const now   = new Date().toISOString().replace('T',' ').slice(0,19);
+    if (Array.isArray(delta) && delta.length) {
+      delta.forEach(upd => {
+        const idx = items.findIndex(i => i.id === upd.id);
+        if (idx >= 0) items[idx] = {...items[idx], ...upd};
+      });
+    }
+    lastSince  = now;
+    lastLoadAt = Date.now();
     setBadge(true);
+    render();
+    updateLastUpdateLabel();
   } catch { setBadge(false); }
+  finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 Aggiorna';
+  }
 }
 
 function setBadge(online) {
@@ -134,15 +158,19 @@ function render() {
   });
 }
 
+document.getElementById('btn-refresh').addEventListener('click', refresh);
+
 document.getElementById('btn-reset').addEventListener('click', async () => {
   if (!confirm('Deselezionare tutti gli articoli?')) return;
   await apiPost('shopping_reset_checks', {week_start: WEEK});
   await loadFull();
 });
 
-// avvio
-loadFull().then(() => { polling = setInterval(pollDelta, 5000); });
-window.addEventListener('beforeunload', () => clearInterval(polling));
+// avvio + ticker "X secondi fa"
+loadFull().then(() => {
+  ticker = setInterval(updateLastUpdateLabel, 1000);
+});
+window.addEventListener('beforeunload', () => clearInterval(ticker));
 </script>
 </body>
 </html>
