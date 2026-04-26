@@ -1,0 +1,5 @@
+data/meal_planner.db
+data/*.db
+*.log
+.DS_Store
+Thumbs.db
