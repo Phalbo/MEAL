@@ -136,6 +136,40 @@ function apiShoppingPriceUpdate(PDO $pdo, array $in): never {
     respond(['success' => true]);
 }
 
+function apiShoppingExportText(PDO $pdo): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = $_GET['week_start'] ?? '';
+    if (!$weekStart) respondError('week_start obbligatorio');
+
+    $st = $pdo->prepare("SELECT * FROM shopping_items WHERE family_id=? AND week_start=? ORDER BY zone_order, ingredient_name");
+    $st->execute([$familyId, $weekStart]);
+    $items = $st->fetchAll();
+
+    header('Content-Type: text/plain; charset=utf-8');
+    $text  = "🛒 Lista spesa — settimana del $weekStart\n";
+    $text .= str_repeat('─', 40) . "\n\n";
+
+    $currentZone = null;
+    $total = 0;
+    foreach ($items as $it) {
+        if ($it['zone'] !== $currentZone) {
+            $currentZone = $it['zone'];
+            $text .= "\n▸ " . strtoupper($currentZone) . "\n";
+        }
+        $check = $it['checked'] ? '✓' : '○';
+        $qty   = $it['quantity'] ? " {$it['quantity']}{$it['unit']}" : '';
+        $price = $it['price_actual'] ? sprintf(' €%.2f', $it['price_actual'])
+               : ($it['price_est'] ? sprintf(' ~€%.2f', $it['price_est']) : '');
+        $text .= "  $check {$it['ingredient_name']}$qty$price\n";
+        $total += (float)($it['price_actual'] ?: $it['price_est'] ?: 0);
+    }
+    $text .= "\n" . str_repeat('─', 40) . "\n";
+    $text .= sprintf("TOTALE STIMATO: €%.2f\n", $total);
+
+    echo $text;
+    exit;
+}
+
 function apiShoppingResetChecks(PDO $pdo, array $in): never {
     $weekStart = $in['week_start'] ?? '';
     if (!$weekStart) respondError('week_start obbligatorio');
