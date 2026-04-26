@@ -1,0 +1,2394 @@
+[
+  {
+    "name": "aglio",
+    "kcal": 149,
+    "zone": "ortofrutta",
+    "aliases": [
+      "spicchio d'aglio",
+      "aglio fresco"
+    ],
+    "unit_weights": {
+      "spicchio": 5,
+      "testa": 40
+    }
+  },
+  {
+    "name": "cipolla",
+    "kcal": 40,
+    "zone": "ortofrutta",
+    "aliases": [
+      "cipolla bianca",
+      "cipolla dorata",
+      "cipolla gialla"
+    ],
+    "unit_weights": {
+      "pz": 120
+    }
+  },
+  {
+    "name": "cipolla rossa",
+    "kcal": 42,
+    "zone": "ortofrutta",
+    "aliases": [
+      "cipolla di tropea"
+    ],
+    "unit_weights": {
+      "pz": 110
+    }
+  },
+  {
+    "name": "carota",
+    "kcal": 41,
+    "zone": "ortofrutta",
+    "aliases": [
+      "carote"
+    ],
+    "unit_weights": {
+      "pz": 80
+    }
+  },
+  {
+    "name": "sedano",
+    "kcal": 16,
+    "zone": "ortofrutta",
+    "aliases": [
+      "costa di sedano",
+      "sedano verde"
+    ],
+    "unit_weights": {
+      "costa": 50
+    }
+  },
+  {
+    "name": "zucchine",
+    "kcal": 17,
+    "zone": "ortofrutta",
+    "aliases": [
+      "zucchina",
+      "zucchino"
+    ],
+    "unit_weights": {
+      "pz": 200
+    }
+  },
+  {
+    "name": "melanzane",
+    "kcal": 25,
+    "zone": "ortofrutta",
+    "aliases": [
+      "melanzana"
+    ],
+    "unit_weights": {
+      "pz": 300
+    }
+  },
+  {
+    "name": "pomodori",
+    "kcal": 18,
+    "zone": "ortofrutta",
+    "aliases": [
+      "pomodoro",
+      "pomodoro fresco",
+      "datterino"
+    ],
+    "unit_weights": {
+      "pz": 120
+    }
+  },
+  {
+    "name": "pomodori cuore di bue",
+    "kcal": 18,
+    "zone": "ortofrutta",
+    "aliases": [
+      "cuore di bue"
+    ],
+    "unit_weights": {
+      "pz": 250
+    }
+  },
+  {
+    "name": "patate",
+    "kcal": 77,
+    "zone": "ortofrutta",
+    "aliases": [
+      "patata"
+    ],
+    "unit_weights": {
+      "pz": 150
+    }
+  },
+  {
+    "name": "peperoni",
+    "kcal": 31,
+    "zone": "ortofrutta",
+    "aliases": [
+      "peperone"
+    ],
+    "unit_weights": {
+      "pz": 160
+    }
+  },
+  {
+    "name": "peperoncino",
+    "kcal": 40,
+    "zone": "ortofrutta",
+    "aliases": [
+      "peperoncino fresco",
+      "peperoncino rosso"
+    ],
+    "unit_weights": {
+      "pz": 10
+    }
+  },
+  {
+    "name": "funghi champignon",
+    "kcal": 22,
+    "zone": "ortofrutta",
+    "aliases": [
+      "champignon",
+      "funghi"
+    ],
+    "unit_weights": {
+      "pz": 20
+    }
+  },
+  {
+    "name": "funghi porcini",
+    "kcal": 28,
+    "zone": "ortofrutta",
+    "aliases": [
+      "porcini",
+      "porcini freschi"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "spinaci",
+    "kcal": 23,
+    "zone": "ortofrutta",
+    "aliases": [
+      "spinacio"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "insalata",
+    "kcal": 15,
+    "zone": "ortofrutta",
+    "aliases": [
+      "lattuga",
+      "iceberg",
+      "romana",
+      "misticanza"
+    ],
+    "unit_weights": {
+      "cespo": 300
+    }
+  },
+  {
+    "name": "rucola",
+    "kcal": 37,
+    "zone": "ortofrutta",
+    "aliases": [
+      "rucola fresca"
+    ],
+    "unit_weights": {
+      "mazzo": 80
+    }
+  },
+  {
+    "name": "broccoli",
+    "kcal": 34,
+    "zone": "ortofrutta",
+    "aliases": [
+      "broccolo",
+      "broccoletti"
+    ],
+    "unit_weights": {
+      "cespo": 400
+    }
+  },
+  {
+    "name": "cavolfiore",
+    "kcal": 25,
+    "zone": "ortofrutta",
+    "aliases": [
+      "cavolo"
+    ],
+    "unit_weights": {
+      "cespo": 600
+    }
+  },
+  {
+    "name": "fagiolini",
+    "kcal": 31,
+    "zone": "ortofrutta",
+    "aliases": [
+      "fagiolino"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "piselli freschi",
+    "kcal": 81,
+    "zone": "ortofrutta",
+    "aliases": [
+      "piselli"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "carciofi",
+    "kcal": 47,
+    "zone": "ortofrutta",
+    "aliases": [
+      "carciofo"
+    ],
+    "unit_weights": {
+      "pz": 200
+    }
+  },
+  {
+    "name": "asparagi",
+    "kcal": 20,
+    "zone": "ortofrutta",
+    "aliases": [
+      "asparago"
+    ],
+    "unit_weights": {
+      "pz": 20
+    }
+  },
+  {
+    "name": "finocchio",
+    "kcal": 31,
+    "zone": "ortofrutta",
+    "aliases": [
+      "finocchi"
+    ],
+    "unit_weights": {
+      "pz": 200
+    }
+  },
+  {
+    "name": "porro",
+    "kcal": 61,
+    "zone": "ortofrutta",
+    "aliases": [
+      "porri"
+    ],
+    "unit_weights": {
+      "pz": 90
+    }
+  },
+  {
+    "name": "scalogno",
+    "kcal": 72,
+    "zone": "ortofrutta",
+    "aliases": [
+      "scalogni"
+    ],
+    "unit_weights": {
+      "pz": 30
+    }
+  },
+  {
+    "name": "rape",
+    "kcal": 28,
+    "zone": "ortofrutta",
+    "aliases": [
+      "cima di rapa",
+      "rapini"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "cavolo nero",
+    "kcal": 49,
+    "zone": "ortofrutta",
+    "aliases": [
+      "kale"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "barbabietole",
+    "kcal": 43,
+    "zone": "ortofrutta",
+    "aliases": [
+      "barbabietola rossa"
+    ],
+    "unit_weights": {
+      "pz": 120
+    }
+  },
+  {
+    "name": "mais",
+    "kcal": 86,
+    "zone": "ortofrutta",
+    "aliases": [
+      "granoturco"
+    ],
+    "unit_weights": {
+      "pannocchia": 200
+    }
+  },
+  {
+    "name": "mele",
+    "kcal": 52,
+    "zone": "ortofrutta",
+    "aliases": [
+      "mela"
+    ],
+    "unit_weights": {
+      "pz": 180
+    }
+  },
+  {
+    "name": "pere",
+    "kcal": 57,
+    "zone": "ortofrutta",
+    "aliases": [
+      "pera"
+    ],
+    "unit_weights": {
+      "pz": 170
+    }
+  },
+  {
+    "name": "banane",
+    "kcal": 89,
+    "zone": "ortofrutta",
+    "aliases": [
+      "banana"
+    ],
+    "unit_weights": {
+      "pz": 120
+    }
+  },
+  {
+    "name": "arance",
+    "kcal": 47,
+    "zone": "ortofrutta",
+    "aliases": [
+      "arancia"
+    ],
+    "unit_weights": {
+      "pz": 180
+    }
+  },
+  {
+    "name": "limone",
+    "kcal": 29,
+    "zone": "ortofrutta",
+    "aliases": [
+      "limoni"
+    ],
+    "unit_weights": {
+      "pz": 100
+    }
+  },
+  {
+    "name": "fragole",
+    "kcal": 32,
+    "zone": "ortofrutta",
+    "aliases": [
+      "fragola"
+    ],
+    "unit_weights": {
+      "pz": 15
+    }
+  },
+  {
+    "name": "uva",
+    "kcal": 69,
+    "zone": "ortofrutta",
+    "aliases": [
+      "uva da tavola"
+    ],
+    "unit_weights": {
+      "grappolo": 200
+    }
+  },
+  {
+    "name": "pesche",
+    "kcal": 39,
+    "zone": "ortofrutta",
+    "aliases": [
+      "pesca"
+    ],
+    "unit_weights": {
+      "pz": 150
+    }
+  },
+  {
+    "name": "albicocche",
+    "kcal": 48,
+    "zone": "ortofrutta",
+    "aliases": [
+      "albicocca"
+    ],
+    "unit_weights": {
+      "pz": 40
+    }
+  },
+  {
+    "name": "ciliegie",
+    "kcal": 63,
+    "zone": "ortofrutta",
+    "aliases": [
+      "ciliegia"
+    ],
+    "unit_weights": {
+      "pz": 8
+    }
+  },
+  {
+    "name": "kiwi",
+    "kcal": 61,
+    "zone": "ortofrutta",
+    "aliases": [
+      "kiwi verde"
+    ],
+    "unit_weights": {
+      "pz": 100
+    }
+  },
+  {
+    "name": "ananas",
+    "kcal": 50,
+    "zone": "ortofrutta",
+    "aliases": [
+      "ananas fresco"
+    ],
+    "unit_weights": {
+      "fetta": 80
+    }
+  },
+  {
+    "name": "melone",
+    "kcal": 34,
+    "zone": "ortofrutta",
+    "aliases": [
+      "melone cantalupo",
+      "melone giallo"
+    ],
+    "unit_weights": {
+      "fetta": 200
+    }
+  },
+  {
+    "name": "anguria",
+    "kcal": 30,
+    "zone": "ortofrutta",
+    "aliases": [
+      "cocomero"
+    ],
+    "unit_weights": {
+      "fetta": 300
+    }
+  },
+  {
+    "name": "fichi",
+    "kcal": 74,
+    "zone": "ortofrutta",
+    "aliases": [
+      "fico"
+    ],
+    "unit_weights": {
+      "pz": 50
+    }
+  },
+  {
+    "name": "basilico",
+    "kcal": 23,
+    "zone": "ortofrutta",
+    "aliases": [
+      "foglie di basilico"
+    ],
+    "unit_weights": {
+      "mazzo": 20,
+      "foglia": 1
+    }
+  },
+  {
+    "name": "prezzemolo",
+    "kcal": 36,
+    "zone": "ortofrutta",
+    "aliases": [
+      "prezzemolo fresco"
+    ],
+    "unit_weights": {
+      "mazzo": 20
+    }
+  },
+  {
+    "name": "rosmarino",
+    "kcal": 131,
+    "zone": "ortofrutta",
+    "aliases": [
+      "rametto di rosmarino"
+    ],
+    "unit_weights": {
+      "rametto": 5
+    }
+  },
+  {
+    "name": "salvia",
+    "kcal": 315,
+    "zone": "ortofrutta",
+    "aliases": [
+      "foglie di salvia"
+    ],
+    "unit_weights": {
+      "foglia": 1
+    }
+  },
+  {
+    "name": "timo",
+    "kcal": 101,
+    "zone": "ortofrutta",
+    "aliases": [
+      "timo fresco"
+    ],
+    "unit_weights": {
+      "rametto": 3
+    }
+  },
+  {
+    "name": "origano",
+    "kcal": 269,
+    "zone": "scaffali",
+    "aliases": [
+      "origano secco"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "alloro",
+    "kcal": 313,
+    "zone": "scaffali",
+    "aliases": [
+      "foglie di alloro",
+      "lauro"
+    ],
+    "unit_weights": {
+      "foglia": 1
+    }
+  },
+  {
+    "name": "menta",
+    "kcal": 70,
+    "zone": "ortofrutta",
+    "aliases": [
+      "foglie di menta"
+    ],
+    "unit_weights": {
+      "mazzo": 20
+    }
+  },
+  {
+    "name": "spaghetti",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "spaghetto",
+      "pasta lunga"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "penne",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "penne rigate",
+      "pennette"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "rigatoni",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "rigatone"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "fusilli",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "fusillo"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "farfalle",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "farfalla",
+      "fiocchetti"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "linguine",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "linguina"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "pasta mista",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "mista",
+      "pastina mista"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "sfoglie lasagne",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "lasagne",
+      "pasta per lasagne"
+    ],
+    "unit_weights": {
+      "foglio": 20
+    }
+  },
+  {
+    "name": "gnocchi",
+    "kcal": 130,
+    "zone": "scaffali",
+    "aliases": [
+      "gnocchetti"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "riso carnaroli",
+    "kcal": 358,
+    "zone": "scaffali",
+    "aliases": [
+      "riso",
+      "carnaroli"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "riso arborio",
+    "kcal": 358,
+    "zone": "scaffali",
+    "aliases": [
+      "arborio"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "riso basmati",
+    "kcal": 356,
+    "zone": "scaffali",
+    "aliases": [
+      "basmati"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "riso integrale",
+    "kcal": 362,
+    "zone": "scaffali",
+    "aliases": [
+      "riso brown"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "orzo",
+    "kcal": 352,
+    "zone": "scaffali",
+    "aliases": [
+      "orzo perlato"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "cous cous",
+    "kcal": 376,
+    "zone": "scaffali",
+    "aliases": [
+      "couscous"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "farro",
+    "kcal": 338,
+    "zone": "scaffali",
+    "aliases": [
+      "farro perlato"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "polenta",
+    "kcal": 362,
+    "zone": "scaffali",
+    "aliases": [
+      "farina di mais",
+      "bramata"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "farina 00",
+    "kcal": 364,
+    "zone": "scaffali",
+    "aliases": [
+      "farina bianca",
+      "farina di grano"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "farina integrale",
+    "kcal": 340,
+    "zone": "scaffali",
+    "aliases": [
+      "farina di grano integrale"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "pane raffermo",
+    "kcal": 274,
+    "zone": "pane",
+    "aliases": [
+      "pane secco",
+      "crostini"
+    ],
+    "unit_weights": {
+      "fetta": 30
+    }
+  },
+  {
+    "name": "fagioli borlotti",
+    "kcal": 337,
+    "zone": "scaffali",
+    "aliases": [
+      "borlotti secchi"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "fagioli cannellini",
+    "kcal": 335,
+    "zone": "scaffali",
+    "aliases": [
+      "cannellini secchi"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "ceci",
+    "kcal": 364,
+    "zone": "scaffali",
+    "aliases": [
+      "ceci secchi"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "lenticchie",
+    "kcal": 353,
+    "zone": "scaffali",
+    "aliases": [
+      "lenticchie secche",
+      "lenticchie rosse"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "piselli surgelati",
+    "kcal": 77,
+    "zone": "surgelati",
+    "aliases": [
+      "piselli congelati"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "fave",
+    "kcal": 341,
+    "zone": "scaffali",
+    "aliases": [
+      "fave secche"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "lupini",
+    "kcal": 371,
+    "zone": "scaffali",
+    "aliases": [
+      "lupino"
+    ],
+    "unit_weights": {
+      "pz": 6
+    }
+  },
+  {
+    "name": "soia",
+    "kcal": 446,
+    "zone": "scaffali",
+    "aliases": [
+      "fagioli di soia"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "passata di pomodoro",
+    "kcal": 27,
+    "zone": "conserve",
+    "aliases": [
+      "passata",
+      "salsa di pomodoro"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "pomodori pelati",
+    "kcal": 20,
+    "zone": "conserve",
+    "aliases": [
+      "pelati"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "concentrato di pomodoro",
+    "kcal": 82,
+    "zone": "conserve",
+    "aliases": [
+      "doppio concentrato",
+      "estratto di pomodoro"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "tonno in scatola",
+    "kcal": 116,
+    "zone": "conserve",
+    "aliases": [
+      "tonno sott'olio",
+      "tonno al naturale"
+    ],
+    "unit_weights": {
+      "lattina": 80
+    }
+  },
+  {
+    "name": "fagioli in scatola",
+    "kcal": 90,
+    "zone": "conserve",
+    "aliases": [
+      "fagioli lessati",
+      "fagioli pronti"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "ceci in scatola",
+    "kcal": 120,
+    "zone": "conserve",
+    "aliases": [
+      "ceci pronti",
+      "ceci lessati"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "lenticchie in scatola",
+    "kcal": 100,
+    "zone": "conserve",
+    "aliases": [
+      "lenticchie pronte"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "mais in scatola",
+    "kcal": 86,
+    "zone": "conserve",
+    "aliases": [
+      "mais dolce",
+      "granturco dolce"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "olive",
+    "kcal": 145,
+    "zone": "conserve",
+    "aliases": [
+      "olive nere",
+      "olive verdi",
+      "olive taggiasche"
+    ],
+    "unit_weights": {
+      "pz": 5
+    }
+  },
+  {
+    "name": "capperi",
+    "kcal": 23,
+    "zone": "conserve",
+    "aliases": [
+      "cappero"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "acciughe sott'olio",
+    "kcal": 210,
+    "zone": "conserve",
+    "aliases": [
+      "alici",
+      "acciughe"
+    ],
+    "unit_weights": {
+      "filetto": 5
+    }
+  },
+  {
+    "name": "pesto genovese",
+    "kcal": 490,
+    "zone": "conserve",
+    "aliases": [
+      "pesto",
+      "pesto alla genovese"
+    ],
+    "unit_weights": {
+      "cucchiaio": 20
+    }
+  },
+  {
+    "name": "maionese",
+    "kcal": 680,
+    "zone": "conserve",
+    "aliases": [
+      "maionese industriale"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "senape",
+    "kcal": 70,
+    "zone": "conserve",
+    "aliases": [
+      "senape di dijon",
+      "mostarda"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "olio evo",
+    "kcal": 884,
+    "zone": "scaffali",
+    "aliases": [
+      "olio",
+      "olio extravergine",
+      "olio d'oliva",
+      "olio extra vergine di oliva"
+    ],
+    "unit_weights": {
+      "cucchiaio": 14,
+      "cucchiaino": 5
+    }
+  },
+  {
+    "name": "olio di semi",
+    "kcal": 884,
+    "zone": "scaffali",
+    "aliases": [
+      "olio di girasole",
+      "olio di arachidi"
+    ],
+    "unit_weights": {
+      "cucchiaio": 14
+    }
+  },
+  {
+    "name": "burro",
+    "kcal": 717,
+    "zone": "latticini",
+    "aliases": [
+      "burro fresco",
+      "burro di qualità"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15,
+      "noce": 10
+    }
+  },
+  {
+    "name": "sale",
+    "kcal": 0,
+    "zone": "scaffali",
+    "aliases": [
+      "sale fino",
+      "sale grosso",
+      "sale marino"
+    ],
+    "unit_weights": {
+      "cucchiaino": 5
+    }
+  },
+  {
+    "name": "pepe nero",
+    "kcal": 251,
+    "zone": "scaffali",
+    "aliases": [
+      "pepe",
+      "pepe bianco"
+    ],
+    "unit_weights": {
+      "cucchiaino": 2
+    }
+  },
+  {
+    "name": "aceto",
+    "kcal": 21,
+    "zone": "scaffali",
+    "aliases": [
+      "aceto di vino",
+      "aceto bianco",
+      "aceto rosso"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "aceto balsamico",
+    "kcal": 88,
+    "zone": "scaffali",
+    "aliases": [
+      "balsamico"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "salsa di soia",
+    "kcal": 60,
+    "zone": "scaffali",
+    "aliases": [
+      "soia salata"
+    ],
+    "unit_weights": {
+      "cucchiaio": 18
+    }
+  },
+  {
+    "name": "salsa worcestershire",
+    "kcal": 78,
+    "zone": "scaffali",
+    "aliases": [
+      "worcestershire"
+    ],
+    "unit_weights": {
+      "cucchiaio": 18
+    }
+  },
+  {
+    "name": "brodo vegetale",
+    "kcal": 15,
+    "zone": "scaffali",
+    "aliases": [
+      "dado vegetale",
+      "brodo di verdure"
+    ],
+    "unit_weights": {
+      "dado": 10
+    }
+  },
+  {
+    "name": "brodo di carne",
+    "kcal": 20,
+    "zone": "scaffali",
+    "aliases": [
+      "dado di carne",
+      "brodo di manzo"
+    ],
+    "unit_weights": {
+      "dado": 10
+    }
+  },
+  {
+    "name": "brodo di pollo",
+    "kcal": 18,
+    "zone": "scaffali",
+    "aliases": [
+      "dado di pollo"
+    ],
+    "unit_weights": {
+      "dado": 10
+    }
+  },
+  {
+    "name": "vino bianco",
+    "kcal": 82,
+    "zone": "bevande",
+    "aliases": [
+      "vino bianco secco"
+    ],
+    "unit_weights": {
+      "bicchiere": 125,
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "vino rosso",
+    "kcal": 85,
+    "zone": "bevande",
+    "aliases": [
+      "vino rosso da cucina"
+    ],
+    "unit_weights": {
+      "bicchiere": 125
+    }
+  },
+  {
+    "name": "zucchero",
+    "kcal": 387,
+    "zone": "scaffali",
+    "aliases": [
+      "zucchero semolato",
+      "zucchero bianco"
+    ],
+    "unit_weights": {
+      "cucchiaio": 12,
+      "cucchiaino": 4
+    }
+  },
+  {
+    "name": "zucchero di canna",
+    "kcal": 380,
+    "zone": "scaffali",
+    "aliases": [
+      "canna da zucchero",
+      "muscovado"
+    ],
+    "unit_weights": {
+      "cucchiaio": 12
+    }
+  },
+  {
+    "name": "miele",
+    "kcal": 304,
+    "zone": "scaffali",
+    "aliases": [
+      "miele millefiori",
+      "miele d'acacia"
+    ],
+    "unit_weights": {
+      "cucchiaio": 20
+    }
+  },
+  {
+    "name": "marmellata",
+    "kcal": 250,
+    "zone": "scaffali",
+    "aliases": [
+      "confettura",
+      "jam"
+    ],
+    "unit_weights": {
+      "cucchiaio": 20
+    }
+  },
+  {
+    "name": "uova",
+    "kcal": 143,
+    "zone": "latticini",
+    "aliases": [
+      "uovo",
+      "uovo fresco",
+      "uovo intero"
+    ],
+    "unit_weights": {
+      "pz": 55
+    }
+  },
+  {
+    "name": "mozzarella",
+    "kcal": 253,
+    "zone": "latticini",
+    "aliases": [
+      "fiordilatte",
+      "mozzarella fresca"
+    ],
+    "unit_weights": {
+      "pz": 125
+    }
+  },
+  {
+    "name": "mozzarella di bufala",
+    "kcal": 270,
+    "zone": "latticini",
+    "aliases": [
+      "bufala"
+    ],
+    "unit_weights": {
+      "pz": 125
+    }
+  },
+  {
+    "name": "parmigiano",
+    "kcal": 431,
+    "zone": "latticini",
+    "aliases": [
+      "parmigiano reggiano",
+      "grana padano",
+      "grana"
+    ],
+    "unit_weights": {
+      "cucchiaio": 8
+    }
+  },
+  {
+    "name": "pecorino romano",
+    "kcal": 387,
+    "zone": "latticini",
+    "aliases": [
+      "pecorino"
+    ],
+    "unit_weights": {
+      "cucchiaio": 8
+    }
+  },
+  {
+    "name": "ricotta",
+    "kcal": 174,
+    "zone": "latticini",
+    "aliases": [
+      "ricotta vaccina",
+      "ricotta di pecora"
+    ],
+    "unit_weights": {
+      "cucchiaio": 30
+    }
+  },
+  {
+    "name": "mascarpone",
+    "kcal": 450,
+    "zone": "latticini",
+    "aliases": [
+      "mascarpone cremoso"
+    ],
+    "unit_weights": {
+      "cucchiaio": 30
+    }
+  },
+  {
+    "name": "gorgonzola",
+    "kcal": 330,
+    "zone": "latticini",
+    "aliases": [
+      "gorgonzola dolce",
+      "gorgonzola piccante"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "scamorza",
+    "kcal": 334,
+    "zone": "latticini",
+    "aliases": [
+      "scamorza affumicata"
+    ],
+    "unit_weights": {
+      "pz": 250
+    }
+  },
+  {
+    "name": "provolone",
+    "kcal": 352,
+    "zone": "latticini",
+    "aliases": [
+      "provolone dolce",
+      "provolone piccante"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "taleggio",
+    "kcal": 300,
+    "zone": "latticini",
+    "aliases": [
+      "taleggio dop"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "fontina",
+    "kcal": 343,
+    "zone": "latticini",
+    "aliases": [
+      "fontina dop",
+      "valdostana"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "crescenza",
+    "kcal": 255,
+    "zone": "latticini",
+    "aliases": [
+      "stracchino"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "robiola",
+    "kcal": 285,
+    "zone": "latticini",
+    "aliases": [
+      "robiola fresca"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "latte intero",
+    "kcal": 61,
+    "zone": "latticini",
+    "aliases": [
+      "latte",
+      "latte fresco"
+    ],
+    "unit_weights": {
+      "bicchiere": 200,
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "latte scremato",
+    "kcal": 35,
+    "zone": "latticini",
+    "aliases": [
+      "latte parzialmente scremato"
+    ],
+    "unit_weights": {
+      "bicchiere": 200
+    }
+  },
+  {
+    "name": "panna da cucina",
+    "kcal": 292,
+    "zone": "latticini",
+    "aliases": [
+      "panna",
+      "panna fresca",
+      "panna liquida"
+    ],
+    "unit_weights": {
+      "cucchiaio": 20
+    }
+  },
+  {
+    "name": "yogurt intero",
+    "kcal": 61,
+    "zone": "latticini",
+    "aliases": [
+      "yogurt",
+      "yogurt naturale"
+    ],
+    "unit_weights": {
+      "vasetto": 125
+    }
+  },
+  {
+    "name": "yogurt greco",
+    "kcal": 115,
+    "zone": "latticini",
+    "aliases": [
+      "yogurt greco intero",
+      "fage"
+    ],
+    "unit_weights": {
+      "vasetto": 150
+    }
+  },
+  {
+    "name": "besciamella",
+    "kcal": 103,
+    "zone": "latticini",
+    "aliases": [
+      "salsa besciamella",
+      "bianca"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "panna acida",
+    "kcal": 200,
+    "zone": "latticini",
+    "aliases": [
+      "sour cream",
+      "crème fraîche"
+    ],
+    "unit_weights": {
+      "cucchiaio": 20
+    }
+  },
+  {
+    "name": "carne macinata mista",
+    "kcal": 250,
+    "zone": "macelleria",
+    "aliases": [
+      "macinata",
+      "macinato misto",
+      "carne macinata"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "carne macinata di manzo",
+    "kcal": 217,
+    "zone": "macelleria",
+    "aliases": [
+      "macinato di manzo",
+      "manzo macinato"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "bistecca di manzo",
+    "kcal": 217,
+    "zone": "macelleria",
+    "aliases": [
+      "bistecca",
+      "fiorentina",
+      "controfiletto"
+    ],
+    "unit_weights": {
+      "pz": 200
+    }
+  },
+  {
+    "name": "pollo intero",
+    "kcal": 215,
+    "zone": "macelleria",
+    "aliases": [
+      "pollo"
+    ],
+    "unit_weights": {
+      "pz": 1200
+    }
+  },
+  {
+    "name": "petto di pollo",
+    "kcal": 165,
+    "zone": "macelleria",
+    "aliases": [
+      "petto pollo",
+      "fettina di pollo"
+    ],
+    "unit_weights": {
+      "pz": 200
+    }
+  },
+  {
+    "name": "cosce di pollo",
+    "kcal": 209,
+    "zone": "macelleria",
+    "aliases": [
+      "coscette",
+      "coscia di pollo"
+    ],
+    "unit_weights": {
+      "pz": 200
+    }
+  },
+  {
+    "name": "guanciale",
+    "kcal": 655,
+    "zone": "macelleria",
+    "aliases": [
+      "guanciale di maiale"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "pancetta",
+    "kcal": 458,
+    "zone": "macelleria",
+    "aliases": [
+      "pancetta tesa",
+      "pancetta affumicata"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "salsiccia",
+    "kcal": 339,
+    "zone": "macelleria",
+    "aliases": [
+      "salsicce",
+      "luganega"
+    ],
+    "unit_weights": {
+      "pz": 80
+    }
+  },
+  {
+    "name": "cotoletta di vitello",
+    "kcal": 250,
+    "zone": "macelleria",
+    "aliases": [
+      "cotoletta",
+      "scaloppina"
+    ],
+    "unit_weights": {
+      "pz": 150
+    }
+  },
+  {
+    "name": "agnello",
+    "kcal": 282,
+    "zone": "macelleria",
+    "aliases": [
+      "costolette di agnello",
+      "abbacchio"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "maiale",
+    "kcal": 242,
+    "zone": "macelleria",
+    "aliases": [
+      "lonza",
+      "lombo di maiale",
+      "filetto di maiale"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "tacchino",
+    "kcal": 189,
+    "zone": "macelleria",
+    "aliases": [
+      "fesa di tacchino",
+      "petto di tacchino"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "prosciutto crudo",
+    "kcal": 250,
+    "zone": "macelleria",
+    "aliases": [
+      "prosciutto di parma",
+      "san daniele"
+    ],
+    "unit_weights": {
+      "fetta": 30
+    }
+  },
+  {
+    "name": "prosciutto cotto",
+    "kcal": 215,
+    "zone": "macelleria",
+    "aliases": [
+      "prosciutto"
+    ],
+    "unit_weights": {
+      "fetta": 30
+    }
+  },
+  {
+    "name": "salame",
+    "kcal": 425,
+    "zone": "macelleria",
+    "aliases": [
+      "salame milano",
+      "salame napoletano"
+    ],
+    "unit_weights": {
+      "fetta": 15
+    }
+  },
+  {
+    "name": "mortadella",
+    "kcal": 311,
+    "zone": "macelleria",
+    "aliases": [
+      "mortadella di bologna"
+    ],
+    "unit_weights": {
+      "fetta": 25
+    }
+  },
+  {
+    "name": "bresaola",
+    "kcal": 175,
+    "zone": "macelleria",
+    "aliases": [
+      "bresaola della valtellina"
+    ],
+    "unit_weights": {
+      "fetta": 20
+    }
+  },
+  {
+    "name": "speck",
+    "kcal": 299,
+    "zone": "macelleria",
+    "aliases": [
+      "speck alto adige"
+    ],
+    "unit_weights": {
+      "fetta": 20
+    }
+  },
+  {
+    "name": "salmone fresco",
+    "kcal": 208,
+    "zone": "pesce",
+    "aliases": [
+      "salmone",
+      "filetto di salmone"
+    ],
+    "unit_weights": {
+      "fetta": 150
+    }
+  },
+  {
+    "name": "merluzzo",
+    "kcal": 82,
+    "zone": "pesce",
+    "aliases": [
+      "baccalà fresco",
+      "filetto di merluzzo"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "tonno fresco",
+    "kcal": 184,
+    "zone": "pesce",
+    "aliases": [
+      "trancio di tonno"
+    ],
+    "unit_weights": {
+      "trancio": 200
+    }
+  },
+  {
+    "name": "branzino",
+    "kcal": 97,
+    "zone": "pesce",
+    "aliases": [
+      "spigola"
+    ],
+    "unit_weights": {
+      "pz": 400
+    }
+  },
+  {
+    "name": "orata",
+    "kcal": 96,
+    "zone": "pesce",
+    "aliases": [
+      "orata fresca"
+    ],
+    "unit_weights": {
+      "pz": 400
+    }
+  },
+  {
+    "name": "gamberi",
+    "kcal": 106,
+    "zone": "pesce",
+    "aliases": [
+      "gamberetto",
+      "mazzancolle"
+    ],
+    "unit_weights": {
+      "pz": 15
+    }
+  },
+  {
+    "name": "cozze",
+    "kcal": 86,
+    "zone": "pesce",
+    "aliases": [
+      "mitili",
+      "cozze fresche"
+    ],
+    "unit_weights": {
+      "pz": 15
+    }
+  },
+  {
+    "name": "vongole",
+    "kcal": 74,
+    "zone": "pesce",
+    "aliases": [
+      "vongola",
+      "vongole veraci"
+    ],
+    "unit_weights": {
+      "pz": 10
+    }
+  },
+  {
+    "name": "calamari",
+    "kcal": 92,
+    "zone": "pesce",
+    "aliases": [
+      "calamaro",
+      "seppia"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "polpo",
+    "kcal": 82,
+    "zone": "pesce",
+    "aliases": [
+      "polpo verace"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "acciughe fresche",
+    "kcal": 131,
+    "zone": "pesce",
+    "aliases": [
+      "alici fresche"
+    ],
+    "unit_weights": {
+      "pz": 10
+    }
+  },
+  {
+    "name": "baccalà",
+    "kcal": 290,
+    "zone": "pesce",
+    "aliases": [
+      "baccalà ammollato",
+      "stoccafisso"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "pane comune",
+    "kcal": 275,
+    "zone": "pane",
+    "aliases": [
+      "pane",
+      "filone",
+      "michetta",
+      "rosetta"
+    ],
+    "unit_weights": {
+      "fetta": 30
+    }
+  },
+  {
+    "name": "pane in cassetta",
+    "kcal": 265,
+    "zone": "pane",
+    "aliases": [
+      "pancarré",
+      "pane da toast"
+    ],
+    "unit_weights": {
+      "fetta": 25
+    }
+  },
+  {
+    "name": "pane integrale",
+    "kcal": 246,
+    "zone": "pane",
+    "aliases": [
+      "pane di segale",
+      "pane multicereali"
+    ],
+    "unit_weights": {
+      "fetta": 30
+    }
+  },
+  {
+    "name": "grissini",
+    "kcal": 413,
+    "zone": "pane",
+    "aliases": [
+      "grissino"
+    ],
+    "unit_weights": {
+      "pz": 7
+    }
+  },
+  {
+    "name": "crackers",
+    "kcal": 409,
+    "zone": "pane",
+    "aliases": [
+      "cracker"
+    ],
+    "unit_weights": {
+      "pz": 7
+    }
+  },
+  {
+    "name": "fette biscottate",
+    "kcal": 371,
+    "zone": "pane",
+    "aliases": [
+      "fetta biscottata"
+    ],
+    "unit_weights": {
+      "pz": 10
+    }
+  },
+  {
+    "name": "cornetti",
+    "kcal": 400,
+    "zone": "pane",
+    "aliases": [
+      "croissant",
+      "cornetto vuoto"
+    ],
+    "unit_weights": {
+      "pz": 50
+    }
+  },
+  {
+    "name": "pan di spagna",
+    "kcal": 321,
+    "zone": "pane",
+    "aliases": [
+      "base torta"
+    ],
+    "unit_weights": {
+      "fetta": 60
+    }
+  },
+  {
+    "name": "piadina",
+    "kcal": 299,
+    "zone": "pane",
+    "aliases": [
+      "piadina romagnola"
+    ],
+    "unit_weights": {
+      "pz": 100
+    }
+  },
+  {
+    "name": "pizza base",
+    "kcal": 271,
+    "zone": "scaffali",
+    "aliases": [
+      "base pizza",
+      "pasta per pizza",
+      "impasto pizza"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "pangrattato",
+    "kcal": 359,
+    "zone": "scaffali",
+    "aliases": [
+      "pan grattato",
+      "mollica di pane"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "spinaci surgelati",
+    "kcal": 28,
+    "zone": "surgelati",
+    "aliases": [
+      "spinaci congelati",
+      "spinaci in foglia"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "fagiolini surgelati",
+    "kcal": 29,
+    "zone": "surgelati",
+    "aliases": [
+      "fagiolini congelati"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "misto mare surgelato",
+    "kcal": 80,
+    "zone": "surgelati",
+    "aliases": [
+      "frutti di mare surgelati",
+      "misto di mare"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "bastoncini di pesce",
+    "kcal": 190,
+    "zone": "surgelati",
+    "aliases": [
+      "bastoncini",
+      "fish fingers"
+    ],
+    "unit_weights": {
+      "pz": 30
+    }
+  },
+  {
+    "name": "gelato",
+    "kcal": 210,
+    "zone": "surgelati",
+    "aliases": [
+      "gelato alla crema",
+      "gelato al cioccolato"
+    ],
+    "unit_weights": {
+      "pallina": 70
+    }
+  },
+  {
+    "name": "noci",
+    "kcal": 654,
+    "zone": "scaffali",
+    "aliases": [
+      "noce",
+      "gherigli di noce"
+    ],
+    "unit_weights": {
+      "pz": 4
+    }
+  },
+  {
+    "name": "mandorle",
+    "kcal": 579,
+    "zone": "scaffali",
+    "aliases": [
+      "mandorla"
+    ],
+    "unit_weights": {
+      "pz": 1
+    }
+  },
+  {
+    "name": "pinoli",
+    "kcal": 673,
+    "zone": "scaffali",
+    "aliases": [
+      "pinolo"
+    ],
+    "unit_weights": {
+      "cucchiaio": 10
+    }
+  },
+  {
+    "name": "pistacchi",
+    "kcal": 562,
+    "zone": "scaffali",
+    "aliases": [
+      "pistacchio"
+    ],
+    "unit_weights": {
+      "pz": 1
+    }
+  },
+  {
+    "name": "nocciole",
+    "kcal": 628,
+    "zone": "scaffali",
+    "aliases": [
+      "nocciola"
+    ],
+    "unit_weights": {
+      "pz": 1
+    }
+  },
+  {
+    "name": "arachidi",
+    "kcal": 567,
+    "zone": "scaffali",
+    "aliases": [
+      "arachide",
+      "burro di arachidi"
+    ],
+    "unit_weights": {
+      "pz": 1
+    }
+  },
+  {
+    "name": "semi di girasole",
+    "kcal": 584,
+    "zone": "scaffali",
+    "aliases": [
+      "semi di sesamo",
+      "semi di chia",
+      "semi"
+    ],
+    "unit_weights": {
+      "cucchiaio": 10
+    }
+  },
+  {
+    "name": "uvetta",
+    "kcal": 299,
+    "zone": "scaffali",
+    "aliases": [
+      "uva passa",
+      "uvetta sultanina"
+    ],
+    "unit_weights": {
+      "cucchiaio": 15
+    }
+  },
+  {
+    "name": "datteri",
+    "kcal": 282,
+    "zone": "scaffali",
+    "aliases": [
+      "dattero"
+    ],
+    "unit_weights": {
+      "pz": 25
+    }
+  },
+  {
+    "name": "cioccolato fondente",
+    "kcal": 546,
+    "zone": "scaffali",
+    "aliases": [
+      "cioccolato nero",
+      "fondente"
+    ],
+    "unit_weights": {
+      "quadretto": 5
+    }
+  },
+  {
+    "name": "cioccolato al latte",
+    "kcal": 535,
+    "zone": "scaffali",
+    "aliases": [
+      "cioccolato"
+    ],
+    "unit_weights": {
+      "quadretto": 5
+    }
+  },
+  {
+    "name": "cacao in polvere",
+    "kcal": 228,
+    "zone": "scaffali",
+    "aliases": [
+      "cacao amaro"
+    ],
+    "unit_weights": {
+      "cucchiaio": 7
+    }
+  },
+  {
+    "name": "biscotti",
+    "kcal": 450,
+    "zone": "scaffali",
+    "aliases": [
+      "biscotto",
+      "savoiardi",
+      "pavesini"
+    ],
+    "unit_weights": {
+      "pz": 10
+    }
+  },
+  {
+    "name": "granola",
+    "kcal": 471,
+    "zone": "scaffali",
+    "aliases": [
+      "muesli",
+      "cereali"
+    ],
+    "unit_weights": {
+      "cucchiaio": 30
+    }
+  },
+  {
+    "name": "marmellata",
+    "kcal": 250,
+    "zone": "scaffali",
+    "aliases": [
+      "confettura di fragole",
+      "confettura"
+    ],
+    "unit_weights": {
+      "cucchiaio": 20
+    }
+  },
+  {
+    "name": "nutella",
+    "kcal": 539,
+    "zone": "scaffali",
+    "aliases": [
+      "crema di nocciole",
+      "crema spalmabile"
+    ],
+    "unit_weights": {
+      "cucchiaio": 20
+    }
+  },
+  {
+    "name": "lievito di birra",
+    "kcal": 105,
+    "zone": "scaffali",
+    "aliases": [
+      "lievito fresco",
+      "lievito secco"
+    ],
+    "unit_weights": {
+      "cubetto": 25
+    }
+  },
+  {
+    "name": "lievito per dolci",
+    "kcal": 158,
+    "zone": "scaffali",
+    "aliases": [
+      "lievito chimico",
+      "baking powder"
+    ],
+    "unit_weights": {
+      "bustina": 16
+    }
+  },
+  {
+    "name": "amido di mais",
+    "kcal": 381,
+    "zone": "scaffali",
+    "aliases": [
+      "maizena",
+      "amido"
+    ],
+    "unit_weights": {
+      "cucchiaio": 10
+    }
+  },
+  {
+    "name": "pane di zenzero",
+    "kcal": 350,
+    "zone": "scaffali",
+    "aliases": [
+      "zenzero in polvere",
+      "ginger"
+    ],
+    "unit_weights": {
+      "cucchiaino": 2
+    }
+  },
+  {
+    "name": "cannella",
+    "kcal": 247,
+    "zone": "scaffali",
+    "aliases": [
+      "cannella in polvere",
+      "stecca di cannella"
+    ],
+    "unit_weights": {
+      "cucchiaino": 2
+    }
+  },
+  {
+    "name": "vanillina",
+    "kcal": 288,
+    "zone": "scaffali",
+    "aliases": [
+      "vaniglia",
+      "baccello di vaniglia",
+      "estratto di vaniglia"
+    ],
+    "unit_weights": {
+      "bustina": 1
+    }
+  },
+  {
+    "name": "zafferano",
+    "kcal": 310,
+    "zone": "scaffali",
+    "aliases": [
+      "zafferano in polvere"
+    ],
+    "unit_weights": {
+      "bustina": 0.125
+    }
+  },
+  {
+    "name": "acqua",
+    "kcal": 0,
+    "zone": "bevande",
+    "aliases": [
+      "acqua minerale",
+      "acqua frizzante",
+      "acqua naturale"
+    ],
+    "unit_weights": {
+      "bicchiere": 200
+    }
+  },
+  {
+    "name": "caffè",
+    "kcal": 2,
+    "zone": "bevande",
+    "aliases": [
+      "caffè espresso",
+      "caffè americano"
+    ],
+    "unit_weights": {
+      "tazzina": 30,
+      "tazza": 200
+    }
+  },
+  {
+    "name": "tè",
+    "kcal": 1,
+    "zone": "bevande",
+    "aliases": [
+      "tè verde",
+      "tè nero",
+      "tisana"
+    ],
+    "unit_weights": {
+      "tazza": 200
+    }
+  },
+  {
+    "name": "succo di arancia",
+    "kcal": 45,
+    "zone": "bevande",
+    "aliases": [
+      "succo d'arancia",
+      "spremuta"
+    ],
+    "unit_weights": {
+      "bicchiere": 200
+    }
+  },
+  {
+    "name": "latte di soia",
+    "kcal": 33,
+    "zone": "bevande",
+    "aliases": [
+      "drink di soia"
+    ],
+    "unit_weights": {
+      "bicchiere": 200
+    }
+  },
+  {
+    "name": "latte di avena",
+    "kcal": 46,
+    "zone": "bevande",
+    "aliases": [
+      "drink di avena"
+    ],
+    "unit_weights": {
+      "bicchiere": 200
+    }
+  },
+  {
+    "name": "birra",
+    "kcal": 43,
+    "zone": "bevande",
+    "aliases": [
+      "birra chiara",
+      "birra lager"
+    ],
+    "unit_weights": {
+      "bottiglia": 330
+    }
+  },
+  {
+    "name": "vino bianco secco",
+    "kcal": 82,
+    "zone": "bevande",
+    "aliases": [
+      "vino bianco da tavola"
+    ],
+    "unit_weights": {
+      "bicchiere": 125
+    }
+  },
+  {
+    "name": "vino rosso",
+    "kcal": 85,
+    "zone": "bevande",
+    "aliases": [
+      "vino rosso da tavola",
+      "chianti"
+    ],
+    "unit_weights": {
+      "bicchiere": 125
+    }
+  },
+  {
+    "name": "grappa",
+    "kcal": 207,
+    "zone": "bevande",
+    "aliases": [
+      "amaro"
+    ],
+    "unit_weights": {
+      "bicchierino": 30
+    }
+  },
+  {
+    "name": "acqua di cottura",
+    "kcal": 0,
+    "zone": "scaffali",
+    "aliases": [
+      "acqua bollente"
+    ],
+    "unit_weights": {}
+  },
+  {
+    "name": "ghiaccio",
+    "kcal": 0,
+    "zone": "bevande",
+    "aliases": [
+      "cubetti di ghiaccio"
+    ],
+    "unit_weights": {}
+  }
+]
