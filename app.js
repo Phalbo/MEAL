@@ -128,6 +128,8 @@ async function loadSchedule() {
 
 function updateWeekLabel() {
   document.getElementById('week-label').textContent = formatWeekLabel(state.week);
+  const navLista = document.getElementById('nav-lista');
+  if (navLista) navLista.href = `lista.php?week=${state.week}`;
 }
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
