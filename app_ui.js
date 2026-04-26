@@ -126,42 +126,100 @@ function updateCalories() {
 }
 
 // ── Shopping list ─────────────────────────────────────────────────────────────
+let shoppingView = 'list'; // 'list' | 'grid'
+
 function renderShoppingList(items) {
   const container = document.getElementById('shopping-list');
   container.innerHTML = '';
   if (!items.length) {
     container.innerHTML = '<p class="shopping-empty">Nessun ingrediente in calendario.</p>'; return;
   }
-  // raggruppa per zona
+
+  // toggle bar + totale
+  const totalEst  = items.reduce((s, it) => s + (parseFloat(it.price_est) || 0), 0);
+  const totalReal = items.reduce((s, it) => s + (parseFloat(it.price_actual) || 0), 0);
+  const bar = document.createElement('div');
+  bar.className = 'shopping-toolbar';
+  bar.innerHTML = `
+    <div class="shop-total">
+      💰 Stimato: <strong>€${totalEst.toFixed(2)}</strong>
+      ${totalReal > 0 ? ` &nbsp;|&nbsp; Reale: <strong>€${totalReal.toFixed(2)}</strong>` : ''}
+    </div>
+    <div class="shop-toggle">
+      <button class="toggle-btn ${shoppingView==='list'?'active':''}" data-view="list">☰ Lista</button>
+      <button class="toggle-btn ${shoppingView==='grid'?'active':''}" data-view="grid">⊞ Riquadri</button>
+    </div>`;
+  bar.querySelectorAll('.toggle-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      shoppingView = btn.dataset.view;
+      renderShoppingList(items);
+    })
+  );
+  container.appendChild(bar);
+
+  if (shoppingView === 'grid') {
+    renderShoppingGrid(items, container);
+  } else {
+    renderShoppingListView(items, container);
+  }
+}
+
+function renderShoppingListView(items, container) {
   const zones = {};
-  items.forEach(it => {
-    const z = it.zone || 'scaffali';
-    if (!zones[z]) zones[z] = [];
-    zones[z].push(it);
-  });
-  const zoneEmoji = { ortofrutta:'🥦', pane:'🥖', macelleria:'🥩', pesce:'🐟',
-                      latticini:'🧀', scaffali:'🛒', bevande:'🍾', surgelati:'❄️', altro:'📦' };
+  items.forEach(it => { const z = it.zone||'scaffali'; (zones[z]??=[]).push(it); });
+  const zoneEmoji = { ortofrutta:'🥦',pane:'🥖',macelleria:'🥩',pesce:'🐟',
+                      latticini:'🧀',scaffali:'🛒',bevande:'🍾',surgelati:'❄️',altro:'📦' };
   Object.entries(zones).forEach(([zone, zItems]) => {
     const group = document.createElement('div');
     group.className = 'shopping-group';
     group.innerHTML = `<div class="shopping-group-title">${zoneEmoji[zone]||'📦'} ${zone}</div>`;
     zItems.forEach(it => {
       const item = document.createElement('div');
-      item.className = 'shopping-item';
+      item.className = 'shopping-item' + (it.checked ? ' checked' : '');
       item.dataset.id = it.id;
+      const price = it.price_actual ? `€${parseFloat(it.price_actual).toFixed(2)}`
+                  : it.price_est   ? `~€${parseFloat(it.price_est).toFixed(2)}` : '';
       item.innerHTML = `
-        <input type="checkbox" class="shopping-check" ${it.checked ? 'checked' : ''}>
+        <input type="checkbox" class="shopping-check" ${it.checked?'checked':''}>
         <span class="shopping-text">${it.ingredient_name}</span>
-        ${it.quantity ? `<span class="shopping-qty">${it.quantity}${it.unit||''}</span>` : ''}`;
-      if (it.checked) item.classList.add('checked');
+        ${it.quantity ? `<span class="shopping-qty">${it.quantity}${it.unit||''}</span>` : ''}
+        ${price ? `<span class="shopping-price">${price}</span>` : ''}
+        <input type="number" class="price-input" placeholder="€ reale" step="0.01" min="0"
+               value="${it.price_actual||''}" title="Inserisci prezzo reale">`;
       item.querySelector('.shopping-check').addEventListener('change', async function() {
         item.classList.toggle('checked', this.checked);
-        await post('shopping_check', { id: it.id, checked: this.checked ? 1 : 0 });
+        await post('shopping_check', {id: it.id, checked: this.checked?1:0});
+        it.checked = this.checked ? 1 : 0;
+      });
+      item.querySelector('.price-input').addEventListener('change', async function() {
+        const price = parseFloat(this.value) || 0;
+        await post('shopping_price_update', {id: it.id, price_actual: price});
+        it.price_actual = price;
+        renderShoppingList(items); // refresh totale
       });
       group.appendChild(item);
     });
     container.appendChild(group);
   });
+}
+
+function renderShoppingGrid(items, container) {
+  const grid = document.createElement('div');
+  grid.className = 'shopping-grid';
+  items.forEach(it => {
+    const card = document.createElement('div');
+    card.className = 'shop-grid-card' + (it.checked ? ' checked' : '');
+    card.innerHTML = `
+      <span class="shop-grid-name">${it.ingredient_name}</span>
+      ${it.quantity ? `<span class="shop-grid-qty">${it.quantity}${it.unit||''}</span>` : ''}`;
+    card.addEventListener('click', async () => {
+      it.checked = it.checked ? 0 : 1;
+      await post('shopping_check', {id: it.id, checked: it.checked});
+      card.classList.toggle('checked', !!it.checked);
+    });
+    grid.appendChild(card);
+  });
+  container.appendChild(grid);
 }
 
 function copyShoppingList() {
