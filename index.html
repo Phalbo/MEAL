@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meal Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-emoji">🍽️</span>
+      <span class="brand-name">Meal Planner</span>
+    </div>
+    <nav class="topbar-nav">
+      <a href="index.html" class="nav-link active">Pianifica</a>
+      <a href="admin.html" class="nav-link">Admin</a>
+    </nav>
+  </header>
+
+  <div class="app-layout">
+
+    <!-- ░░ SIDEBAR ░░ -->
+    <aside class="sidebar">
+      <div class="sidebar-controls">
+        <input type="text" id="search" class="ctrl-input" placeholder="🔍 Cerca piatto…">
+        <select id="filter-cat" class="ctrl-select">
+          <option value="">Tutte le categorie</option>
+          <option value="Colazione">Colazione</option>
+          <option value="Primo">Primo</option>
+          <option value="Secondo">Secondo</option>
+          <option value="Contorno">Contorno</option>
+          <option value="Altro">Altro</option>
+        </select>
+      </div>
+      <div id="meal-list" class="meal-list"></div>
+      <button id="btn-random" class="btn-random">🎲 Piatto casuale</button>
+    </aside>
+
+    <!-- ░░ MAIN ░░ -->
+    <main class="main-area">
+
+      <section class="calendar-section">
+        <div class="section-header">
+          <h2>Settimana</h2>
+          <button id="btn-clear-all" class="btn-ghost">🗑 Svuota tutto</button>
+        </div>
+        <div class="calendar-wrapper">
+          <div id="calendar-grid" class="calendar-grid"></div>
+        </div>
+      </section>
+
+      <div class="bottom-row">
+
+        <section class="calories-section">
+          <h2>Calorie per giorno</h2>
+          <div id="calories-bars" class="calories-bars"></div>
+        </section>
+
+        <section class="shopping-section">
+          <div class="section-header">
+            <h2>🛒 Lista della spesa</h2>
+            <button id="btn-copy-list" class="btn-ghost">📋 Copia</button>
+          </div>
+          <div id="shopping-list" class="shopping-list">
+            <p class="shopping-empty">Trascina i piatti nel calendario per generare la lista.</p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

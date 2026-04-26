@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "name": "Spaghetti al sugo",
+    "cal": 520,
+    "emoji": "🍝",
+    "category": "Primo",
+    "ingredients": ["Spaghetti 500g", "Passata di pomodoro 400g", "Aglio 2 spicchi", "Olio EVO q.b.", "Basilico q.b."]
+  },
+  {
+    "id": 2,
+    "name": "Carbonara",
+    "cal": 650,
+    "emoji": "🥚",
+    "category": "Primo",
+    "ingredients": ["Spaghetti 320g", "Guanciale 150g", "Uova 4", "Pecorino Romano 80g", "Pepe nero q.b."]
+  },
+  {
+    "id": 3,
+    "name": "Risotto ai funghi",
+    "cal": 490,
+    "emoji": "🍄",
+    "category": "Primo",
+    "ingredients": ["Riso Carnaroli 320g", "Funghi porcini 200g", "Cipolla 1", "Vino bianco 1 bicchiere", "Parmigiano 50g", "Burro 30g", "Brodo vegetale 1L"]
+  },
+  {
+    "id": 4,
+    "name": "Pasta e fagioli",
+    "cal": 440,
+    "emoji": "🫘",
+    "category": "Primo",
+    "ingredients": ["Pasta mista 300g", "Fagioli borlotti 400g", "Cipolla 1", "Carota 1", "Rosmarino q.b.", "Olio EVO q.b."]
+  },
+  {
+    "id": 5,
+    "name": "Penne all'arrabbiata",
+    "cal": 480,
+    "emoji": "🌶️",
+    "category": "Primo",
+    "ingredients": ["Penne rigate 320g", "Passata di pomodoro 400g", "Peperoncino 2", "Aglio 3 spicchi", "Olio EVO q.b.", "Prezzemolo q.b."]
+  },
+  {
+    "id": 6,
+    "name": "Lasagne al ragù",
+    "cal": 720,
+    "emoji": "🫕",
+    "category": "Primo",
+    "ingredients": ["Sfoglie lasagne 500g", "Carne macinata mista 400g", "Besciamella 500ml", "Passata di pomodoro 400g", "Parmigiano 100g", "Cipolla 1", "Carota 1", "Sedano 1 costa"]
+  },
+  {
+    "id": 7,
+    "name": "Minestrone",
+    "cal": 260,
+    "emoji": "🥦",
+    "category": "Primo",
+    "ingredients": ["Zucchine 2", "Carote 2", "Patate 2", "Fagiolini 150g", "Pomodori 3", "Pasta mista 150g", "Olio EVO q.b.", "Parmigiano q.b."]
+  },
+  {
+    "id": 8,
+    "name": "Pollo arrosto",
+    "cal": 380,
+    "emoji": "🍗",
+    "category": "Secondo",
+    "ingredients": ["Pollo intero 1.2kg", "Rosmarino 2 rametti", "Aglio 3 spicchi", "Olio EVO q.b.", "Sale q.b.", "Patate 600g"]
+  },
+  {
+    "id": 9,
+    "name": "Bistecca alla fiorentina",
+    "cal": 680,
+    "emoji": "🥩",
+    "category": "Secondo",
+    "ingredients": ["Bistecca Fiorentina 600g", "Sale grosso q.b.", "Rosmarino q.b.", "Olio EVO q.b.", "Limone 1"]
+  },
+  {
+    "id": 10,
+    "name": "Melanzane alla parmigiana",
+    "cal": 420,
+    "emoji": "🍆",
+    "category": "Secondo",
+    "ingredients": ["Melanzane 2 grandi", "Passata di pomodoro 400g", "Mozzarella 200g", "Parmigiano 80g", "Olio di semi per friggere q.b.", "Basilico q.b."]
+  },
+  {
+    "id": 11,
+    "name": "Tonno e fagioli",
+    "cal": 310,
+    "emoji": "🐟",
+    "category": "Secondo",
+    "ingredients": ["Tonno in scatola 2 lattine (160g)", "Fagioli cannellini 400g", "Cipolla rossa 1", "Olio EVO q.b.", "Limone 1", "Prezzemolo q.b."]
+  },
+  {
+    "id": 12,
+    "name": "Frittata di zucchine",
+    "cal": 290,
+    "emoji": "🍳",
+    "category": "Secondo",
+    "ingredients": ["Uova 4", "Zucchine 2", "Olio EVO q.b.", "Sale q.b.", "Parmigiano 30g", "Menta q.b."]
+  },
+  {
+    "id": 13,
+    "name": "Insalata caprese",
+    "cal": 280,
+    "emoji": "🥗",
+    "category": "Contorno",
+    "ingredients": ["Mozzarella di bufala 250g", "Pomodori cuore di bue 4", "Basilico q.b.", "Olio EVO q.b.", "Sale q.b."]
+  },
+  {
+    "id": 14,
+    "name": "Pizza Margherita",
+    "cal": 600,
+    "emoji": "🍕",
+    "category": "Altro",
+    "ingredients": ["Impasto pizza (o base pronta) 500g", "Passata di pomodoro 200g", "Mozzarella 200g", "Basilico q.b.", "Olio EVO q.b."]
+  },
+  {
+    "id": 15,
+    "name": "Zuppa di lenticchie",
+    "cal": 320,
+    "emoji": "🥣",
+    "category": "Primo",
+    "ingredients": ["Lenticchie 300g", "Carota 2", "Sedano 2 coste", "Cipolla 1", "Pomodori pelati 400g", "Olio EVO q.b.", "Rosmarino q.b."]
+  },
+  {
+    "id": 16,
+    "name": "Cornetto e caffè",
+    "cal": 310,
+    "emoji": "☕",
+    "category": "Colazione",
+    "ingredients": ["Cornetti 2", "Caffè 2 tazzine", "Zucchero q.b."]
+  },
+  {
+    "id": 17,
+    "name": "Yogurt e frutta",
+    "cal": 180,
+    "emoji": "🍓",
+    "category": "Colazione",
+    "ingredients": ["Yogurt greco 150g", "Fragole 100g", "Miele 1 cucchiaio", "Granola 30g"]
+  },
+  {
+    "id": 18,
+    "name": "Uova strapazzate e toast",
+    "cal": 350,
+    "emoji": "🍞",
+    "category": "Colazione",
+    "ingredients": ["Uova 3", "Pane in cassetta 2 fette", "Burro 10g", "Sale q.b.", "Latte 2 cucchiai"]
+  }
+]
