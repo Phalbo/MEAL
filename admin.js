@@ -3,6 +3,11 @@
 const API  = 'api.php';
 const CSRF = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
 
+const INTOL_PRESETS = [
+  'lattosio','glutine','nichel','uova crude','peperoni',
+  'arachidi','frutta secca','crostacei','soia','senape',
+];
+
 let allMeals = [];
 
 async function get(action, params = {}) {
@@ -56,36 +61,60 @@ function renderTable(meals) {
   });
 }
 
-// ── Ingredient rows (strutturati: nome | qtà | unità) ─────────────────────────
+// ── Ingredient rows (nome | qtà | unità | allergeni) ─────────────────────────
 function addIngredientRow(ing = {}) {
-  const list = document.getElementById('ingredients-list');
-  const row  = document.createElement('div');
+  const list    = document.getElementById('ingredients-list');
+  const block   = document.createElement('div');
+  block.className = 'ingredient-block';
+
+  // riga principale
+  const row = document.createElement('div');
   row.className = 'ingredient-row';
   row.innerHTML = `
-    <input class="ing-name" type="text"   placeholder="Es. Spaghetti"  value="${ing.name     || ''}" style="flex:2">
-    <input class="ing-qty"  type="number" placeholder="Qtà"            value="${ing.quantity || ''}" style="flex:.7;min-width:60px">
-    <input class="ing-unit" type="text"   placeholder="g / pz / ml"    value="${ing.unit     || ''}" style="flex:.8;min-width:60px">
+    <input class="ing-name" type="text"   placeholder="Es. Spaghetti" value="${ing.name     || ''}" style="flex:2">
+    <input class="ing-qty"  type="number" placeholder="Qtà"           value="${ing.quantity || ''}" style="flex:.7;min-width:60px">
+    <input class="ing-unit" type="text"   placeholder="g/pz/ml"       value="${ing.unit     || ''}" style="flex:.8;min-width:60px">
     <button type="button" class="btn-remove-ing" title="Rimuovi">×</button>`;
-  row.querySelector('.btn-remove-ing').addEventListener('click', () => row.remove());
+  block.appendChild(row);
 
-  // nutrition lookup su blur dal nome
+  // riga allergeni
+  const activeFlags = (ing.intolerance_flags || '').split(',').map(f => f.trim().toLowerCase()).filter(Boolean);
+  const flagsDiv = document.createElement('div');
+  flagsDiv.className = 'ing-flags';
+  INTOL_PRESETS.forEach(preset => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'flag-btn' + (activeFlags.includes(preset) ? ' active' : '');
+    btn.textContent = preset;
+    btn.dataset.flag = preset;
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+    flagsDiv.appendChild(btn);
+  });
+  block.appendChild(flagsDiv);
+
+  row.querySelector('.btn-remove-ing').addEventListener('click', () => block.remove());
   row.querySelector('.ing-name').addEventListener('blur', async function() {
     const name = this.value.trim();
     if (!name) return;
     const data = await get('nutrition_lookup', { name });
-    if (data.kcal_100g) showToast(`💡 ${name}: ${data.kcal_100g} kcal/100g — zona: ${data.zone}`);
+    if (data.kcal_100g) showToast(`💡 ${name}: ${data.kcal_100g} kcal/100g — ${data.zone}`);
   });
 
-  list.appendChild(row);
+  list.appendChild(block);
   row.querySelector('.ing-name').focus();
 }
 
 function getIngredients() {
-  return [...document.querySelectorAll('.ingredient-row')].map(r => ({
-    name:     r.querySelector('.ing-name').value.trim(),
-    quantity: r.querySelector('.ing-qty').value  || null,
-    unit:     r.querySelector('.ing-unit').value.trim() || null,
-  })).filter(i => i.name);
+  return [...document.querySelectorAll('.ingredient-block')].map(block => {
+    const flags = [...block.querySelectorAll('.flag-btn.active')]
+      .map(b => b.dataset.flag).join(',');
+    return {
+      name:              block.querySelector('.ing-name').value.trim(),
+      quantity:          block.querySelector('.ing-qty').value  || null,
+      unit:              block.querySelector('.ing-unit').value.trim() || null,
+      intolerance_flags: flags,
+    };
+  }).filter(i => i.name);
 }
 
 // ── Form ──────────────────────────────────────────────────────────────────────
