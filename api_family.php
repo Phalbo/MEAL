@@ -148,3 +148,11 @@ function apiIntoleranceDelete(PDO $pdo, array $in): never {
     $pdo->prepare("DELETE FROM intolerances WHERE id=?")->execute([$id]);
     respond(['success' => true]);
 }
+
+function apiIntoleranceListByProfile(PDO $pdo): never {
+    $profileId = (int)($_GET['profile_id'] ?? 0);
+    if (!$profileId) respondError('profile_id obbligatorio');
+    $st = $pdo->prepare("SELECT id, label FROM intolerances WHERE profile_id=? ORDER BY id");
+    $st->execute([$profileId]);
+    respond($st->fetchAll());
+}

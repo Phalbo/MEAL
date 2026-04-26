@@ -75,6 +75,11 @@ $csrf = $_SESSION['csrf_token'];
 const API  = 'api.php';
 const CSRF = () => document.querySelector('meta[name="csrf-token"]').content;
 
+const INTOL_PRESETS = [
+  'lattosio','glutine','nichel','uova crude','peperoni',
+  'arachidi','frutta secca','crostacei','soia','senape',
+];
+
 async function get(action, p={}) { return (await fetch(`${API}?${new URLSearchParams({action,...p})}`)).json(); }
 async function post(action, data={}) {
   return (await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -83,33 +88,85 @@ async function post(action, data={}) {
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
+function renderProfileCard(p, plist) {
+  const card = document.createElement('div');
+  card.className = 'form-card';
+  card.style = 'margin-bottom:.75rem;padding:1rem';
+
+  // header profilo
+  const header = document.createElement('div');
+  header.style = 'display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem';
+  header.innerHTML = `
+    <span style="font-size:1.4rem">${p.avatar_emoji}</span>
+    <div style="flex:1">
+      <strong>${p.name}</strong>
+      <span style="font-size:.78rem;color:var(--ink-muted);margin-left:.5rem">${p.type} — ${p.portion_weight} porz.</span>
+    </div>
+    <button class="btn-delete btn-del-profile" data-id="${p.id}" style="padding:.25rem .6rem">🗑 Rimuovi</button>`;
+  card.appendChild(header);
+
+  // tag intolleranze attive
+  const tagsDiv = document.createElement('div');
+  tagsDiv.style = 'display:flex;flex-wrap:wrap;gap:.3rem;min-height:1.5rem';
+  (p.intolerances || []).forEach(label => {
+    const tag = document.createElement('span');
+    tag.className = 'intol-tag';
+    tag.innerHTML = `${label} <button data-label="${label}" data-pid="${p.id}" title="Rimuovi">×</button>`;
+    tag.querySelector('button').addEventListener('click', async function() {
+      // trova id intolleranza dal server cercando per profilo
+      const profiles = await get('profiles_list');
+      const prof     = profiles.find(x => x.id == p.id);
+      // non abbiamo l'id diretto — usiamo intolerance_delete via label
+      // workaround: delete by label using a custom action
+      const all = await get('intolerance_list_by_profile', {profile_id: p.id});
+      const found = Array.isArray(all) ? all.find(i => i.label === label) : null;
+      if (found) { await post('intolerance_delete', {id: found.id}); }
+      load();
+    });
+    tagsDiv.appendChild(tag);
+  });
+  if (!(p.intolerances||[]).length) tagsDiv.innerHTML = '<span style="font-size:.78rem;color:var(--ink-muted)">Nessuna intolleranza</span>';
+  card.appendChild(tagsDiv);
+
+  // preset buttons per aggiungere
+  const presetsDiv = document.createElement('div');
+  presetsDiv.className = 'intol-presets';
+  INTOL_PRESETS.forEach(preset => {
+    if ((p.intolerances||[]).includes(preset)) return; // già attiva
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn'; btn.textContent = '+ ' + preset;
+    btn.addEventListener('click', async () => {
+      const d = await post('intolerance_add', {profile_id: p.id, label: preset});
+      if (d.error) return showToast('❌ ' + d.error);
+      load();
+    });
+    presetsDiv.appendChild(btn);
+  });
+  card.appendChild(presetsDiv);
+
+  card.querySelector('.btn-del-profile').addEventListener('click', async () => {
+    if (!confirm(`Rimuovere il profilo "${p.name}"?`)) return;
+    await post('profiles_delete', {id: p.id}); load();
+  });
+  plist.appendChild(card);
+}
+
 async function load() {
   const me = await get('me');
-  document.getElementById('family-name').textContent  = me.family?.name || '';
-  document.getElementById('invite-code').textContent  = me.family?.invite_code || '';
+  document.getElementById('family-name').textContent = me.family?.name || '';
+  document.getElementById('invite-code').textContent = me.family?.invite_code || '';
 
   const profiles = await get('profiles_list');
   const plist    = document.getElementById('profiles-list');
   const totalW   = profiles.reduce((s,p) => s + parseFloat(p.portion_weight), 0);
-  plist.innerHTML = profiles.length ? '' : '<p style="font-size:.82rem;color:var(--ink-muted)">Nessun profilo.</p>';
-  profiles.forEach(p => {
-    const row = document.createElement('div');
-    row.style = 'display:flex;align-items:center;gap:.75rem;padding:.4rem .6rem;background:var(--cream);border-radius:6px';
-    row.innerHTML = `<span style="font-size:1.2rem">${p.avatar_emoji}</span>
-      <span style="flex:1;font-weight:500">${p.name}</span>
-      <span style="font-size:.78rem;color:var(--ink-muted)">${p.type} — ${p.portion_weight} porz.</span>
-      <button class="btn-delete" data-id="${p.id}" style="padding:.2rem .5rem">🗑</button>`;
-    row.querySelector('.btn-delete').addEventListener('click', async () => {
-      await post('profiles_delete', {id: p.id}); load();
-    });
-    plist.appendChild(row);
-  });
-  document.getElementById('profiles-list').insertAdjacentHTML('beforeend',
+  plist.innerHTML = '';
+  if (!profiles.length) plist.innerHTML = '<p style="font-size:.82rem;color:var(--ink-muted)">Nessun profilo.</p>';
+  profiles.forEach(p => renderProfileCard(p, plist));
+  plist.insertAdjacentHTML('beforeend',
     `<p style="font-size:.78rem;color:var(--ink-muted);margin-top:.25rem">Totale porzioni: <strong>${totalW.toFixed(1)}</strong></p>`);
 
   const members = await get('family_members');
-  const mlist   = document.getElementById('members-list');
-  mlist.innerHTML = members.map(m =>
+  document.getElementById('members-list').innerHTML = members.map(m =>
     `<div style="display:flex;align-items:center;gap:.5rem;font-size:.85rem">
       <span>${m.avatar_emoji||'👤'}</span><strong>${m.name}</strong>
       <span style="color:var(--ink-muted);font-size:.78rem">${m.email}</span>
@@ -124,8 +181,7 @@ document.getElementById('btn-add-profile').addEventListener('click', async () =>
   const emoji  = document.getElementById('p-emoji').value || '👤';
   const d = await post('profiles_add', {name, type, portion_weight: weight, avatar_emoji: emoji});
   if (d.error) return showToast('❌ ' + d.error);
-  document.getElementById('p-name').value = '';
-  showToast('✅ Profilo aggiunto'); load();
+  document.getElementById('p-name').value = ''; showToast('✅ Profilo aggiunto'); load();
 });
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
