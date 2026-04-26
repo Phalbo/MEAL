@@ -132,6 +132,8 @@ function initSchema(PDO $pdo): void {
 
     // Migration: share_token (safe on existing DB)
     try { $pdo->exec("ALTER TABLE families ADD COLUMN share_token TEXT UNIQUE"); } catch (Exception $e) {}
+    // Migration: is_system meals
+    try { $pdo->exec("ALTER TABLE meals ADD COLUMN is_system INTEGER DEFAULT 0"); } catch (Exception $e) {}
 
     // Seed categorie
     $pdo->exec("INSERT OR IGNORE INTO meal_categories (id, name, emoji) VALUES
