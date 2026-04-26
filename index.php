@@ -97,5 +97,6 @@ $csrf = $_SESSION['csrf_token'];
 
 <div id="toast" class="toast"></div>
 <script src="app.js"></script>
+<script src="app_ui.js"></script>
 </body>
 </html>

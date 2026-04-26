@@ -1,44 +1,118 @@
-/* ================================================
-   MEAL PLANNER — app.js
-   ================================================ */
+/* ── Meal Planner v2.0 — app.js (state, API, init, sidebar) ── */
 
-const API      = 'api.php';
-const DAYS     = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
-const DAY_FULL = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
-const SLOTS    = ['Colazione','Pranzo','Cena'];
-const MAX_CAL  = 2500; // reference daily calories for bar chart
+const API   = 'api.php';
+const DAYS  = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+const SLOTS = ['colazione','pranzo','cena'];
+const SLOT_LABELS = ['Colazione','Pranzo','Cena'];
+const MAX_CAL = 2500;
 
-let allMeals = [];
-// schedule[day_index][slot] = meal object | null
-let schedule = loadSchedule();
+const CSRF = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-// ── INIT ────────────────────────────────────────────
+const state = {
+  user:     null,
+  family:   null,
+  week:     getMondayStr(),   // 'YYYY-MM-DD'
+  schedule: {},               // key: `${dayIdx}_${slotIdx}` → meal obj
+  meals:    [],
+};
+
+// ── API helpers ──────────────────────────────────────────────────────────────
+async function get(action, params = {}) {
+  const qs  = new URLSearchParams({ action, ...params });
+  const res = await fetch(`${API}?${qs}`);
+  return res.json();
+}
+
+async function post(action, data = {}) {
+  const res = await fetch(API, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ action, csrf_token: CSRF(), ...data }),
+  });
+  return res.json();
+}
+
+// ── Week helpers ─────────────────────────────────────────────────────────────
+function getMondayStr(date = new Date()) {
+  const d   = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+function addWeeks(base, n) {
+  const d = new Date(base + 'T00:00:00');
+  d.setDate(d.getDate() + n * 7);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatWeekLabel(monday) {
+  const d   = new Date(monday + 'T00:00:00');
+  const end = new Date(d); end.setDate(end.getDate() + 6);
+  const fmt = dt => dt.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+  return `${fmt(d)} – ${fmt(end)}`;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   try {
-    const res  = await fetch(`${API}?action=list`);
-    allMeals   = await res.json();
-  } catch(e) {
-    showToast('⚠️ Impossibile caricare i piatti. PHP attivo?');
-    allMeals = [];
-  }
-  renderSidebar(allMeals);
+    const me = await get('me');
+    if (me.error) { location.href = 'login.php'; return; }
+    state.user   = me.user;
+    state.family = me.family;
+    document.getElementById('user-label').textContent =
+      `${me.user.avatar_emoji || '👤'} ${me.user.name}`;
+  } catch { location.href = 'login.php'; return; }
+
+  await loadMeals();
+  await loadSchedule();
+  renderSidebar(state.meals);
   renderCalendar();
   updateBottom();
   bindControls();
+  updateWeekLabel();
 }
 
-// ── SIDEBAR ─────────────────────────────────────────
+async function loadMeals() {
+  try {
+    const data = await get('meals_list');
+    state.meals = Array.isArray(data) ? data : [];
+  } catch { state.meals = []; }
+}
+
+async function loadSchedule() {
+  try {
+    const rows = await get('schedule_get', { week_start: state.week });
+    state.schedule = {};
+    if (!Array.isArray(rows)) return;
+    rows.forEach(row => {
+      const si = SLOTS.indexOf(row.slot);
+      if (si < 0 || !row.meal_id) return;
+      state.schedule[`${row.day_index}_${si}`] = {
+        id: row.meal_id, name: row.name, emoji: row.emoji,
+        cal_per_adult: row.cal_per_adult, category: row.category,
+        schedule_id: row.id, exception_note: row.exception_note,
+        is_exception: row.is_exception,
+      };
+    });
+  } catch { state.schedule = {}; }
+}
+
+function updateWeekLabel() {
+  document.getElementById('week-label').textContent = formatWeekLabel(state.week);
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
 function renderSidebar(meals) {
   const list = document.getElementById('meal-list');
   list.innerHTML = '';
-
   if (!meals.length) {
     list.innerHTML = '<p style="font-size:.8rem;color:var(--ink-muted);padding:.5rem">Nessun piatto trovato.</p>';
     return;
   }
-
   meals.forEach(meal => {
-    const card = document.createElement('div');
+    const card      = document.createElement('div');
     card.className  = 'meal-card';
     card.draggable  = true;
     card.dataset.id = meal.id;
@@ -46,10 +120,9 @@ function renderSidebar(meals) {
       <span class="mc-emoji">${meal.emoji}</span>
       <div class="mc-info">
         <div class="mc-name">${meal.name}</div>
-        <div class="mc-cal">${meal.cal} kcal</div>
-        <div class="mc-cat">${meal.category}</div>
+        <div class="mc-cal">${meal.cal_per_adult} kcal</div>
+        <div class="mc-cat">${meal.category || ''}</div>
       </div>`;
-
     card.addEventListener('dragstart', e => {
       e.dataTransfer.setData('mealId',  String(meal.id));
       e.dataTransfer.setData('fromKey', '');
@@ -63,266 +136,48 @@ function renderSidebar(meals) {
 function filterSidebar() {
   const q   = document.getElementById('search').value.toLowerCase();
   const cat = document.getElementById('filter-cat').value;
-  const filtered = allMeals.filter(m => {
-    const matchQ   = !q   || m.name.toLowerCase().includes(q);
-    const matchCat = !cat || m.category === cat;
-    return matchQ && matchCat;
-  });
-  renderSidebar(filtered);
+  renderSidebar(state.meals.filter(m =>
+    (!q   || m.name.toLowerCase().includes(q)) &&
+    (!cat || String(m.category_id) === cat)
+  ));
 }
 
-// ── CALENDAR ─────────────────────────────────────────
-function renderCalendar() {
-  const grid = document.getElementById('calendar-grid');
-  grid.innerHTML = '';
-
-  // Top-left corner
-  const corner = el('div', 'cal-header slot-label', '');
-  grid.appendChild(corner);
-
-  // Day headers
-  DAYS.forEach(d => grid.appendChild(el('div', 'cal-header', d)));
-
-  // Rows per slot
-  SLOTS.forEach((slot, si) => {
-    // Row label
-    grid.appendChild(el('div', 'cal-header slot-label', slot));
-
-    // 7 cells
-    DAYS.forEach((_, di) => {
-      grid.appendChild(makeCell(di, si));
-    });
-  });
-}
-
-function makeCell(dayIndex, slotIndex) {
-  const key  = `${dayIndex}_${slotIndex}`;
-  const meal = schedule[key] || null;
-
-  const cell = document.createElement('div');
-  cell.className = 'cal-cell' + (meal ? ' filled' : '');
-  cell.dataset.key = key;
-
-  if (meal) {
-    const inner = document.createElement('div');
-    inner.className = 'cell-meal';
-    inner.draggable = true;
-    inner.innerHTML = `
-      <span class="cell-emoji">${meal.emoji}</span>
-      <span class="cell-name">${meal.name}</span>
-      <span class="cell-cal">${meal.cal} kcal</span>
-      <button class="cell-remove" title="Rimuovi">×</button>`;
-
-    inner.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('mealId',  String(meal.id));
-      e.dataTransfer.setData('fromKey', key);
-      e.stopPropagation();
-    });
-    inner.querySelector('.cell-remove').addEventListener('click', e => {
-      e.stopPropagation();
-      delete schedule[key];
-      saveSchedule();
-      renderCalendar();
-      updateBottom();
-    });
-    cell.appendChild(inner);
-  } else {
-    cell.appendChild(el('span', 'cell-placeholder', '+'));
-  }
-
-  // Drop targets
-  cell.addEventListener('dragover', e => {
-    e.preventDefault();
-    cell.classList.add('drag-over');
-  });
-  cell.addEventListener('dragleave', () => cell.classList.remove('drag-over'));
-  cell.addEventListener('drop', e => {
-    e.preventDefault();
-    cell.classList.remove('drag-over');
-
-    const mealId  = parseInt(e.dataTransfer.getData('mealId'));
-    const fromKey = e.dataTransfer.getData('fromKey');
-    const found   = allMeals.find(m => m.id === mealId);
-    if (!found) return;
-
-    // Swap if dropping onto a filled cell from another cell
-    if (fromKey && fromKey !== key) {
-      const occupant = schedule[key] || null;
-      if (occupant) {
-        schedule[fromKey] = occupant;   // swap
-      } else {
-        delete schedule[fromKey];
-      }
-    }
-
-    schedule[key] = found;
-    saveSchedule();
-    renderCalendar();
-    updateBottom();
-    showToast(`${found.emoji} ${found.name} aggiunto`);
-  });
-
-  return cell;
-}
-
-// ── BOTTOM: CALORIES + SHOPPING ─────────────────────
-function updateBottom() {
-  updateCalories();
-  updateShoppingList();
-}
-
-function updateCalories() {
-  const container = document.getElementById('calories-bars');
-  container.innerHTML = '';
-
-  DAYS.forEach((dayShort, di) => {
-    let total = 0;
-    SLOTS.forEach((_, si) => {
-      const m = schedule[`${di}_${si}`];
-      if (m) total += m.cal || 0;
-    });
-
-    const pct   = Math.min(100, Math.round((total / MAX_CAL) * 100));
-    const color = total === 0 ? '#E0D8CC'
-                : total < 1500 ? '#4A8060'
-                : total < 2200 ? '#E8A020'
-                : '#C84B2D';
-
-    const row = document.createElement('div');
-    row.className = 'cal-bar-row';
-    row.innerHTML = `
-      <span class="cal-bar-label">${dayShort}</span>
-      <div class="cal-bar-track">
-        <div class="cal-bar-fill" style="width:${pct}%;background:${color}"></div>
-      </div>
-      <span class="cal-bar-value">${total ? total + ' kcal' : '—'}</span>`;
-    container.appendChild(row);
-  });
-}
-
-function updateShoppingList() {
-  const container = document.getElementById('shopping-list');
-  container.innerHTML = '';
-
-  // Collect all ingredients grouped by meal
-  const byMeal = {};
-  Object.values(schedule).forEach(meal => {
-    if (!meal) return;
-    const key = `${meal.id}_${meal.name}`;
-    if (!byMeal[key]) byMeal[key] = { meal, ingredients: meal.ingredients || [] };
-  });
-
-  const entries = Object.values(byMeal);
-  if (!entries.length) {
-    container.innerHTML = '<p class="shopping-empty">Trascina i piatti nel calendario per generare la lista.</p>';
-    return;
-  }
-
-  entries.forEach(({ meal, ingredients }) => {
-    const group = document.createElement('div');
-    group.className = 'shopping-group';
-    group.innerHTML = `<div class="shopping-group-title">${meal.emoji} ${meal.name}</div>`;
-
-    ingredients.forEach(ing => {
-      // Try to split "Spaghetti 500g" → name + qty
-      const parts = ing.trim().match(/^(.+?)\s+([\d.,]+\s*\S+|q\.b\.|q\.b|QB)$/i);
-      const name  = parts ? parts[1] : ing;
-      const qty   = parts ? parts[2] : '';
-
-      const item = document.createElement('div');
-      item.className = 'shopping-item';
-      item.innerHTML = `
-        <input type="checkbox" class="shopping-check">
-        <span class="shopping-text">${name}</span>
-        ${qty ? `<span class="shopping-qty">${qty}</span>` : ''}`;
-
-      item.querySelector('.shopping-check').addEventListener('change', function() {
-        item.classList.toggle('checked', this.checked);
-      });
-
-      group.appendChild(item);
-    });
-    container.appendChild(group);
-  });
-}
-
-// ── PERSIST ──────────────────────────────────────────
-function saveSchedule() {
-  localStorage.setItem('mp_schedule', JSON.stringify(schedule));
-}
-
-function loadSchedule() {
-  try {
-    return JSON.parse(localStorage.getItem('mp_schedule') || '{}');
-  } catch {
-    return {};
-  }
-}
-
-// ── CONTROLS ─────────────────────────────────────────
+// ── Controls ─────────────────────────────────────────────────────────────────
 function bindControls() {
   document.getElementById('search').addEventListener('input', filterSidebar);
   document.getElementById('filter-cat').addEventListener('change', filterSidebar);
 
-  document.getElementById('btn-clear-all').addEventListener('click', () => {
+  document.getElementById('btn-prev-week').addEventListener('click', async () => {
+    state.week = addWeeks(state.week, -1);
+    updateWeekLabel();
+    await loadSchedule(); renderCalendar(); updateBottom();
+  });
+  document.getElementById('btn-next-week').addEventListener('click', async () => {
+    state.week = addWeeks(state.week, +1);
+    updateWeekLabel();
+    await loadSchedule(); renderCalendar(); updateBottom();
+  });
+  document.getElementById('btn-clear-all').addEventListener('click', async () => {
     if (!confirm('Svuotare tutta la settimana?')) return;
-    schedule = {};
-    saveSchedule();
-    renderCalendar();
-    updateBottom();
+    await post('schedule_clear', { week_start: state.week });
+    state.schedule = {}; renderCalendar(); updateBottom();
   });
-
+  document.getElementById('btn-gen-shopping').addEventListener('click', async () => {
+    showToast('⏳ Genero lista…');
+    const items = await post('shopping_generate', { week_start: state.week });
+    renderShoppingList(Array.isArray(items) ? items : []);
+    showToast('✅ Lista generata');
+  });
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    await post('logout');
+    location.href = 'login.php';
+  });
   document.getElementById('btn-random').addEventListener('click', () => {
-    if (!allMeals.length) return;
-    const meal = allMeals[Math.floor(Math.random() * allMeals.length)];
-    showToast(`🎲 Suggerisco: ${meal.emoji} ${meal.name} (${meal.cal} kcal)`);
-    // Highlight the card if visible
-    document.querySelectorAll('.meal-card').forEach(c => {
-      if (parseInt(c.dataset.id) === meal.id) {
-        c.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        c.style.transition = 'box-shadow .2s';
-        c.style.boxShadow = '0 0 0 3px var(--terra)';
-        setTimeout(() => c.style.boxShadow = '', 1800);
-      }
-    });
+    if (!state.meals.length) return;
+    const m = state.meals[Math.floor(Math.random() * state.meals.length)];
+    showToast(`🎲 ${m.emoji} ${m.name} (${m.cal_per_adult} kcal)`);
   });
-
-  document.getElementById('btn-copy-list').addEventListener('click', () => {
-    const items = [...document.querySelectorAll('.shopping-item .shopping-text')]
-      .map(s => s.textContent.trim());
-    const titles = [...document.querySelectorAll('.shopping-group-title')]
-      .map(t => '\n' + t.textContent.trim());
-    // Build text
-    let text = '';
-    document.querySelectorAll('.shopping-group').forEach(g => {
-      const title = g.querySelector('.shopping-group-title').textContent.trim();
-      const ings  = [...g.querySelectorAll('.shopping-item')].map(i => {
-        const name = i.querySelector('.shopping-text').textContent;
-        const qty  = i.querySelector('.shopping-qty')?.textContent || '';
-        return `• ${name}${qty ? ' – ' + qty : ''}`;
-      }).join('\n');
-      text += `\n${title}\n${ings}\n`;
-    });
-    navigator.clipboard.writeText(text.trim())
-      .then(() => showToast('📋 Lista copiata negli appunti'))
-      .catch(() => showToast('⚠️ Copia non supportata'));
-  });
+  document.getElementById('btn-copy-list').addEventListener('click', copyShoppingList);
 }
 
-// ── UTILS ─────────────────────────────────────────────
-function el(tag, cls, text) {
-  const e = document.createElement(tag);
-  e.className = cls;
-  e.textContent = text;
-  return e;
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ── START ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', init);
