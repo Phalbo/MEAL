@@ -26,10 +26,16 @@ function makeCell(dayIndex, slotIndex) {
     const inner      = document.createElement('div');
     inner.className  = 'cell-meal';
     inner.draggable  = true;
+    // cerca il piatto completo (con ingredienti) per il check conflitti
+    const fullMeal = state.meals.find(m => m.id === meal.id) || meal;
+    const conflict = mealHasConflict(fullMeal);
+    if (conflict) cell.classList.add('cell-has-conflict');
+
     inner.innerHTML  = `
       <span class="cell-emoji">${meal.emoji}</span>
       <span class="cell-name">${meal.name}</span>
       <span class="cell-cal">${meal.cal_per_adult} kcal</span>
+      ${conflict        ? `<span class="cell-alert" title="Contiene allergeni per un profilo">🚨</span>` : ''}
       ${meal.exception_note ? `<span class="cell-exception" title="${meal.exception_note}">📝</span>` : ''}
       <button class="cell-remove" title="Rimuovi">×</button>`;
 
@@ -95,19 +101,26 @@ function makeCell(dayIndex, slotIndex) {
 function updateBottom() { updateCalories(); }
 
 function updateCalories() {
-  const container = document.getElementById('calories-bars');
+  const container   = document.getElementById('calories-bars');
   container.innerHTML = '';
+  const portions    = getTotalPortions();       // Σ portion_weight famiglia
+  const maxCal      = MAX_CAL * Math.max(1, portions); // soglie scalate
+  const hasProfiles = state.profiles.length > 0;
+
   DAYS.forEach((dayShort, di) => {
-    let total = 0;
-    SLOTS.forEach((_, si) => { const m = state.schedule[`${di}_${si}`]; if (m) total += m.cal_per_adult || 0; });
-    const pct   = Math.min(100, Math.round((total / MAX_CAL) * 100));
-    const color = total === 0 ? '#E0D8CC' : total < 1500 ? '#4A8060' : total < 2200 ? '#E8A020' : '#C84B2D';
-    const row   = document.createElement('div');
+    let baseKcal = 0;
+    SLOTS.forEach((_, si) => { const m = state.schedule[`${di}_${si}`]; if (m) baseKcal += m.cal_per_adult || 0; });
+    const total  = Math.round(baseKcal * portions);    // kcal famiglia
+    const pct    = Math.min(100, Math.round((total / maxCal) * 100));
+    const color  = total === 0 ? '#E0D8CC' : total < (1500 * portions) ? '#4A8060'
+                 : total < (2200 * portions) ? '#E8A020' : '#C84B2D';
+    const label  = total ? `${total} kcal${hasProfiles ? ` (×${portions.toFixed(1)})` : ''}` : '—';
+    const row    = document.createElement('div');
     row.className = 'cal-bar-row';
     row.innerHTML = `
       <span class="cal-bar-label">${dayShort}</span>
       <div class="cal-bar-track"><div class="cal-bar-fill" style="width:${pct}%;background:${color}"></div></div>
-      <span class="cal-bar-value">${total ? total + ' kcal' : '—'}</span>`;
+      <span class="cal-bar-value">${label}</span>`;
     container.appendChild(row);
   });
 }
