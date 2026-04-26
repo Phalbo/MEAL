@@ -905,3 +905,105 @@ body {
 }
 .shop-grid-name { font-size: .78rem; font-weight: 500; line-height: 1.2; }
 .shop-grid-qty  { font-size: .7rem;  color: var(--ink-muted); }
+
+/* ════════════════════════════════════════════════
+   FASE 4 — UX avanzata
+   ════════════════════════════════════════════════ */
+
+/* ── Hamburger (solo mobile) ─────────────────────── */
+.btn-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--cream);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: .2rem .4rem;
+  border-radius: 4px;
+}
+.btn-hamburger:hover { background: rgba(255,255,255,.1); }
+
+/* ── Sidebar overlay ─────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 199;
+}
+.sidebar-overlay.active { display: block; }
+
+/* ── Exception note + form ───────────────────────── */
+.exc-wrap { border-top: 1px solid var(--cream-dark); }
+.exc-note {
+  font-size: .7rem;
+  color: var(--terra-dark);
+  padding: .2rem .4rem;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+.exc-form { display: none; padding: .35rem; }
+.exc-form.active { display: block; }
+.exc-input {
+  width: 100%;
+  font-size: .75rem;
+  font-family: inherit;
+  border: 1px solid var(--cream-dark);
+  border-radius: 4px;
+  padding: .25rem .4rem;
+  resize: none;
+  background: var(--cream);
+  color: var(--ink);
+}
+.exc-input:focus { outline: none; border-color: var(--terra); }
+.exc-actions { display: flex; gap: .3rem; margin-top: .25rem; }
+.exc-save, .exc-cancel {
+  font-size: .72rem;
+  padding: .18rem .5rem;
+  border-radius: 4px;
+  border: 1px solid;
+  cursor: pointer;
+  font-family: inherit;
+}
+.exc-save   { background: var(--terra); color: #fff; border-color: var(--terra); }
+.exc-cancel { background: none; color: var(--ink-muted); border-color: var(--cream-dark); }
+.cell-exc-btn {
+  font-size: .78rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 .1rem;
+  opacity: .45;
+  line-height: 1;
+}
+.cell-exc-btn:hover { opacity: 1; }
+
+/* ── Mobile responsive (drawer sidebar) ─────────────── */
+@media (max-width: 768px) {
+  .btn-hamburger { display: block; }
+  .topbar { padding: .55rem .85rem; gap: .5rem; }
+  .topbar-brand { font-size: 1rem; }
+  .nav-link { font-size: .72rem; padding: .25rem .5rem; }
+  .user-label { display: none; }
+
+  .sidebar {
+    position: fixed;
+    left: -270px;
+    top: 0;
+    height: 100vh;
+    width: 260px;
+    min-width: 260px;
+    z-index: 200;
+    transition: left .28s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,.22);
+    padding-top: 3.5rem;
+  }
+  .sidebar.open { left: 0; }
+
+  .app-layout { overflow: visible; }
+  .main-area { padding: .75rem; }
+}

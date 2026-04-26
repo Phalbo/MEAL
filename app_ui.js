@@ -35,8 +35,8 @@ function makeCell(dayIndex, slotIndex) {
       <span class="cell-emoji">${meal.emoji}</span>
       <span class="cell-name">${meal.name}</span>
       <span class="cell-cal">${meal.cal_per_adult} kcal</span>
-      ${conflict        ? `<span class="cell-alert" title="Contiene allergeni per un profilo">🚨</span>` : ''}
-      ${meal.exception_note ? `<span class="cell-exception" title="${meal.exception_note}">📝</span>` : ''}
+      ${conflict ? `<span class="cell-alert" title="Contiene allergeni per un profilo">🚨</span>` : ''}
+      <button class="cell-exc-btn" title="Nota eccezione">📝</button>
       <button class="cell-remove" title="Rimuovi">×</button>`;
 
     inner.addEventListener('dragstart', e => {
@@ -55,6 +55,45 @@ function makeCell(dayIndex, slotIndex) {
       renderCalendar(); updateBottom();
     });
     cell.appendChild(inner);
+
+    // ── Exception form ────────────────────────────────
+    const excWrap = document.createElement('div');
+    excWrap.className = 'exc-wrap';
+    if (meal.exception_note) {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'exc-note';
+      noteEl.title = meal.exception_note;
+      noteEl.textContent = '📝 ' + meal.exception_note;
+      excWrap.appendChild(noteEl);
+    }
+    const excForm = document.createElement('div');
+    excForm.className = 'exc-form';
+    excForm.innerHTML = `
+      <textarea class="exc-input" rows="2" placeholder="Nota eccezione…">${meal.exception_note||''}</textarea>
+      <div class="exc-actions">
+        <button class="exc-save">Salva</button>
+        <button class="exc-cancel">Annulla</button>
+      </div>`;
+    excWrap.appendChild(excForm);
+
+    inner.querySelector('.cell-exc-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      excForm.classList.toggle('active');
+    });
+    excForm.querySelector('.exc-save').addEventListener('click', async e => {
+      e.stopPropagation();
+      const note = excForm.querySelector('.exc-input').value.trim();
+      if (!meal.schedule_id) return;
+      await post('schedule_exception', { schedule_id: meal.schedule_id, exception_note: note, is_exception: note ? 1 : 0 });
+      state.schedule[key].exception_note = note;
+      renderCalendar();
+    });
+    excForm.querySelector('.exc-cancel').addEventListener('click', e => {
+      e.stopPropagation();
+      excForm.classList.remove('active');
+    });
+    cell.appendChild(excWrap);
+
   } else {
     cell.appendChild(el('span', 'cell-placeholder', '+'));
   }

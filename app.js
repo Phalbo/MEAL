@@ -208,6 +208,35 @@ function bindControls() {
     showToast(`🎲 ${m.emoji} ${m.name} (${m.cal_per_adult} kcal)`);
   });
   document.getElementById('btn-copy-list').addEventListener('click', copyShoppingList);
+
+  document.getElementById('btn-copy-week').addEventListener('click', async () => {
+    const fromWeek = addWeeks(state.week, -1);
+    if (!confirm(`Copiare il piano del ${formatWeekLabel(fromWeek)} in questa settimana?\nIl piano attuale verrà sovrascritto.`)) return;
+    const res = await post('schedule_copy', { from_week: fromWeek, to_week: state.week });
+    if (res.error) { showToast('⚠️ ' + res.error); return; }
+    showToast(res.copied ? `✅ ${res.copied} piatti copiati` : '⚠️ Settimana precedente vuota');
+    await loadSchedule(); renderCalendar(); updateBottom();
+  });
+
+  document.getElementById('btn-share-list').addEventListener('click', () => {
+    const base = location.href.replace(/\/[^/]*$/, '/');
+    const url  = `${base}lista.php?week=${state.week}`;
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('🔗 Link lista copiato'))
+      .catch(() => showToast('⚠️ Copia non supportata'));
+  });
+
+  // Mobile sidebar drawer
+  const sidebar  = document.querySelector('.sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  document.getElementById('btn-menu').addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
