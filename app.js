@@ -14,6 +14,7 @@ const state = {
   week:     getMondayStr(),   // 'YYYY-MM-DD'
   schedule: {},               // key: `${dayIdx}_${slotIdx}` → meal obj
   meals:    [],
+  profiles: [],               // family_profiles con intolerances[]
 };
 
 // ── API helpers ──────────────────────────────────────────────────────────────
@@ -65,7 +66,7 @@ async function init() {
       `${me.user.avatar_emoji || '👤'} ${me.user.name}`;
   } catch { location.href = 'login.php'; return; }
 
-  await loadMeals();
+  await Promise.all([loadMeals(), loadProfiles()]);
   await loadSchedule();
   renderSidebar(state.meals);
   renderCalendar();
@@ -79,6 +80,32 @@ async function loadMeals() {
     const data = await get('meals_list');
     state.meals = Array.isArray(data) ? data : [];
   } catch { state.meals = []; }
+}
+
+async function loadProfiles() {
+  try {
+    const data = await get('profiles_list');
+    state.profiles = Array.isArray(data) ? data : [];
+  } catch { state.profiles = []; }
+}
+
+// ── Porzioni e conflitti ──────────────────────────────────────────────────────
+function getTotalPortions() {
+  if (!state.profiles.length) return 1;
+  return state.profiles.reduce((s, p) => s + parseFloat(p.portion_weight || 1), 0);
+}
+
+function mealHasConflict(meal) {
+  if (!state.profiles.length) return false;
+  // tutti i flag degli ingredienti del piatto
+  const flags = (meal.ingredients || [])
+    .flatMap(i => (i.intolerance_flags || '').split(',').map(f => f.trim().toLowerCase()))
+    .filter(Boolean);
+  if (!flags.length) return false;
+  // intolleranze di tutti i profili famiglia
+  const familyIntol = state.profiles
+    .flatMap(p => (p.intolerances || []).map(l => l.toLowerCase()));
+  return flags.some(f => familyIntol.includes(f));
 }
 
 async function loadSchedule() {
@@ -112,14 +139,15 @@ function renderSidebar(meals) {
     return;
   }
   meals.forEach(meal => {
+    const conflict  = mealHasConflict(meal);
     const card      = document.createElement('div');
-    card.className  = 'meal-card';
+    card.className  = 'meal-card' + (conflict ? ' meal-conflict' : '');
     card.draggable  = true;
     card.dataset.id = meal.id;
     card.innerHTML  = `
       <span class="mc-emoji">${meal.emoji}</span>
       <div class="mc-info">
-        <div class="mc-name">${meal.name}</div>
+        <div class="mc-name">${meal.name}${conflict ? ' <span title="Contiene allergeni">⚠️</span>' : ''}</div>
         <div class="mc-cal">${meal.cal_per_adult} kcal</div>
         <div class="mc-cat">${meal.category || ''}</div>
       </div>`;
