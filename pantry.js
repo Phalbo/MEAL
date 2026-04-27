@@ -25,7 +25,8 @@ function showToast(html, duration = 2800) {
 
 const ZONE_EMOJI = {
   ortofrutta:'🥦', pane:'🥖', macelleria:'🥩', pesce:'🐟',
-  latticini:'🧀', scaffali:'🛒', bevande:'🍾', surgelati:'❄️', altro:'📦',
+  latticini:'🧀', scaffali:'🛒', bevande:'🍾', surgelati:'❄️',
+  casalinghi:'🏠', altro:'📦',
 };
 
 let allItems = [];
@@ -114,15 +115,31 @@ async function saveForm() {
   const name   = document.getElementById('pf-name').value.trim();
   if (!name) { showToast('⚠️ Inserisci il nome dell\'ingrediente'); return; }
   const editId = document.getElementById('pf-editing-id').value;
-  const payload = {
-    ingredient_name: name,
-    quantity:    document.getElementById('pf-qty').value    || null,
-    unit:        document.getElementById('pf-unit').value.trim() || '',
-    zone:        document.getElementById('pf-zone').value,
-    expiry_date: document.getElementById('pf-expiry').value || null,
-  };
-  if (editId) payload.id = parseInt(editId);
-  const res = await post('pantry_update', payload);
+  const zone   = document.getElementById('pf-zone').value;
+  const qty    = document.getElementById('pf-qty').value;
+  const unit   = document.getElementById('pf-unit').value.trim() || null;
+  const expiry = document.getElementById('pf-expiry').value || null;
+
+  let res;
+  if (editId) {
+    // modifica esistente → pantry_update (UPSERT con scadenza)
+    res = await post('pantry_update', {
+      id: parseInt(editId),
+      ingredient_name: name,
+      quantity: qty || null,
+      unit: unit || '',
+      zone,
+      expiry_date: expiry,
+    });
+  } else {
+    // nuovo articolo → pantry_add_manual (arricchisce nutrition_db)
+    res = await post('pantry_add_manual', {
+      ingredient_name: name,
+      quantity: qty || null,
+      unit,
+      zone,
+    });
+  }
   if (res.error) { showToast('⚠️ ' + res.error); return; }
   closeForm();
   await reload();
@@ -205,6 +222,14 @@ async function init() {
   document.getElementById('import-confirm').addEventListener('click', confirmImport);
   document.getElementById('import-cancel').addEventListener('click', () => {
     document.getElementById('import-modal').style.display = 'none';
+  });
+  document.getElementById('btn-clear-pantry').addEventListener('click', async () => {
+    if (!confirm('Svuotare tutta la dispensa? Tutti gli articoli verranno eliminati.')) return;
+    const res = await post('pantry_clear');
+    if (res.error) { showToast('⚠️ ' + res.error); return; }
+    allItems = [];
+    filterAndRender();
+    showToast('🗑 Dispensa svuotata');
   });
   document.getElementById('btn-logout').addEventListener('click', async () => {
     await post('logout');
