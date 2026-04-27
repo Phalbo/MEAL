@@ -153,6 +153,13 @@ function initSchema(PDO $pdo): void {
     // Migration: pantry_items — articoli manuali
     try { $pdo->exec("ALTER TABLE pantry_items ADD COLUMN is_manual INTEGER DEFAULT 0"); } catch (Exception $e) {}
 
+    // Indici per query frequenti
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_schedule_family_week ON schedule (family_id, week_start)");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_shopping_family_week ON shopping_items (family_id, week_start)");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_meals_family        ON meals (family_id, is_system)");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_pantry_family       ON pantry_items (family_id)");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_ingredients_meal    ON meal_ingredients (meal_id)");
+
     // Seed categorie
     $pdo->exec("INSERT OR IGNORE INTO meal_categories (id, name, emoji) VALUES
         (1,'Colazione','☀️'),

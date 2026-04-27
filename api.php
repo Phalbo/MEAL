@@ -47,6 +47,7 @@ function getDB(): PDO {
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     $pdo->exec('PRAGMA foreign_keys = ON');
     $pdo->exec('PRAGMA journal_mode = WAL');
+    $pdo->exec('PRAGMA cache_size = -8000');
     initSchema($pdo);
     return $pdo;
 }
