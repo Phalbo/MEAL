@@ -124,8 +124,8 @@ $csrf = $_SESSION['csrf_token'];
     <a href="lista.php"  class="bottom-nav-item">
       <span class="bn-icon">🛒</span>Spesa
     </a>
-    <a href="pantry.php" class="bottom-nav-item">
-      <span class="bn-icon">🏪</span>Dispensa
+    <a href="family.php" class="bottom-nav-item">
+      <span class="bn-icon">👥</span>Famiglia
     </a>
   </div>
 </nav>

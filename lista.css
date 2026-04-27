@@ -112,7 +112,7 @@
 /* ── Main ─────────────────────────────────────────── */
 .lista-main {
   flex: 1;
-  padding: 1.25rem 1rem;
+  padding: 1.25rem 1rem 5rem;
   max-width: 640px;
   width: 100%;
   margin: 0 auto;
