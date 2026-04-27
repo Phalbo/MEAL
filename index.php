@@ -14,7 +14,6 @@ $csrf = $_SESSION['csrf_token'];
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf) ?>">
   <title>Meal Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,10 +25,10 @@ $csrf = $_SESSION['csrf_token'];
     <span class="brand-name">Meal Planner</span>
   </div>
   <nav class="topbar-nav">
-    <a href="index.php"  class="nav-link active">Pianifica</a>
-    <a href="admin.php"  class="nav-link">Admin</a>
-    <a href="family.php" class="nav-link">Famiglia</a>
-    <a id="nav-lista" href="lista.php" class="nav-link">🛒 Lista spesa</a>
+    <a href="index.php"  class="nav-link active">📅 Pianifica</a>
+    <a href="admin.php"  class="nav-link">🍝 Ricette</a>
+    <a href="family.php" class="nav-link">👥 Famiglia</a>
+    <a id="nav-lista" href="lista.php" class="nav-link">🛒 Spesa</a>
     <a href="pantry.php" class="nav-link">🏪 Dispensa</a>
   </nav>
   <div class="topbar-user">
@@ -60,6 +59,15 @@ $csrf = $_SESSION['csrf_token'];
   <!-- ░░ MAIN ░░ -->
   <main class="main-area">
 
+    <!-- Hero card -->
+    <div class="hero-card">
+      <div class="hero-emoji-wrap">🍜</div>
+      <div class="hero-text">
+        <h1>Ciao! 👋 Cosa cuciniamo questa settimana?</h1>
+        <p>Trascina i piatti sul calendario o usa "Popola settimana" per iniziare.</p>
+      </div>
+    </div>
+
     <section class="calendar-section">
       <div class="section-header">
         <div class="week-nav">
@@ -68,9 +76,9 @@ $csrf = $_SESSION['csrf_token'];
           <button id="btn-next-week" class="btn-ghost">›</button>
         </div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-          <button id="btn-autofill"  class="btn-ghost">🎲 Popola settimana</button>
-          <button id="btn-copy-week" class="btn-ghost" title="Copia piano dalla settimana precedente">📋 Copia sett.</button>
-          <button id="btn-clear-all" class="btn-ghost">🗑 Svuota</button>
+          <button id="btn-autofill"    class="btn-ghost">🎲 Popola</button>
+          <button id="btn-copy-week"   class="btn-ghost" title="Copia piano dalla settimana precedente">📋 Copia</button>
+          <button id="btn-clear-all"   class="btn-ghost">🗑 Svuota</button>
           <button id="btn-gen-shopping" class="btn-ghost">🛒 Genera lista</button>
         </div>
       </div>
@@ -89,8 +97,10 @@ $csrf = $_SESSION['csrf_token'];
       <section class="shopping-section">
         <div class="section-header">
           <h2>🛒 Lista della spesa</h2>
-          <button id="btn-share-list" class="btn-ghost">🔗 Condividi</button>
-          <button id="btn-copy-list" class="btn-ghost">📋 Copia</button>
+          <div style="display:flex;gap:.4rem">
+            <button id="btn-share-list" class="btn-ghost">🔗 Condividi</button>
+            <button id="btn-copy-list"  class="btn-ghost">📋 Copia</button>
+          </div>
         </div>
         <div id="shopping-list" class="shopping-list">
           <p class="shopping-empty">Clicca "🛒 Genera lista" per creare la lista della settimana.</p>
@@ -101,9 +111,34 @@ $csrf = $_SESSION['csrf_token'];
   </main>
 </div>
 
+<!-- ░░ BOTTOM NAV mobile ░░ -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="index.php"  class="bottom-nav-item active">
+      <span class="bn-icon">📅</span>Pianifica
+    </a>
+    <a href="admin.php"  class="bottom-nav-item">
+      <span class="bn-icon">🍝</span>Ricette
+    </a>
+    <button class="bottom-nav-fab" id="btn-fab-random" title="Piatto casuale">🎲</button>
+    <a href="lista.php"  class="bottom-nav-item">
+      <span class="bn-icon">🛒</span>Spesa
+    </a>
+    <a href="pantry.php" class="bottom-nav-item">
+      <span class="bn-icon">🏪</span>Dispensa
+    </a>
+  </div>
+</nav>
+
 <div id="sidebar-overlay" class="sidebar-overlay"></div>
 <div id="toast" class="toast"></div>
 <script src="app.js"></script>
 <script src="app_ui.js"></script>
+<script>
+// FAB mobile → stesso comportamento di btn-random
+document.getElementById('btn-fab-random')?.addEventListener('click', () => {
+  document.getElementById('btn-random')?.click();
+});
+</script>
 </body>
 </html>
