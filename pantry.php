@@ -14,7 +14,6 @@ $csrf = $_SESSION['csrf_token'];
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf) ?>">
   <title>Dispensa — Meal Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,10 +25,10 @@ $csrf = $_SESSION['csrf_token'];
     <span class="brand-name">Meal Planner</span>
   </div>
   <nav class="topbar-nav">
-    <a href="index.php"  class="nav-link">Pianifica</a>
-    <a href="admin.php"  class="nav-link">Admin</a>
-    <a href="family.php" class="nav-link">Famiglia</a>
-    <a href="lista.php"  class="nav-link">🛒 Lista spesa</a>
+    <a href="index.php"  class="nav-link">📅 Pianifica</a>
+    <a href="admin.php"  class="nav-link">🍝 Ricette</a>
+    <a href="family.php" class="nav-link">👥 Famiglia</a>
+    <a href="lista.php"  class="nav-link">🛒 Spesa</a>
     <a href="pantry.php" class="nav-link active">🏪 Dispensa</a>
   </nav>
   <div class="topbar-user">
@@ -38,18 +37,18 @@ $csrf = $_SESSION['csrf_token'];
   </div>
 </header>
 
-<main class="page-main" style="max-width:860px;margin:0 auto;padding:1.5rem 1rem">
+<main class="page-main">
 
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem">
-    <h1 style="font-family:'Playfair Display',serif;font-size:1.6rem;margin:0">🏪 Dispensa</h1>
+    <h1 style="font-family:var(--font-head);font-size:1.6rem;font-weight:700;margin:0">🏪 Dispensa</h1>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap">
       <button id="btn-from-shopping" class="btn-ghost">🛒 Importa da lista</button>
-      <button id="btn-add-item"      class="btn-ghost">+ Aggiungi</button>
+      <button id="btn-add-item"      class="btn-primary">+ Aggiungi</button>
     </div>
   </div>
 
   <!-- Form aggiunta/modifica -->
-  <div id="pantry-form-wrap" style="display:none;background:var(--cream-mid,#f5f0e8);border-radius:10px;padding:1rem;margin-bottom:1.25rem">
+  <div id="pantry-form-wrap" style="display:none;background:var(--primary-soft);border-radius:var(--radius-card);padding:1.1rem;margin-bottom:1.25rem">
     <div style="display:grid;grid-template-columns:1fr 80px 80px 110px 130px auto;gap:.5rem;align-items:end;flex-wrap:wrap">
       <div>
         <label class="form-label">Ingrediente</label>
@@ -94,11 +93,11 @@ $csrf = $_SESSION['csrf_token'];
   <!-- Lista dispensa -->
   <div id="pantry-list"></div>
 
-  <!-- Import da lista: seleziona settimana -->
+  <!-- Import modal -->
   <div id="import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center">
-    <div style="background:#fff;border-radius:12px;padding:1.5rem;min-width:280px;text-align:center">
-      <h3 style="margin:0 0 1rem">Importa da lista spesa</h3>
-      <p style="font-size:.85rem;color:#666;margin:0 0 .75rem">Seleziona la settimana di riferimento (saranno importati solo gli articoli spuntati).</p>
+    <div style="background:var(--card);border-radius:var(--radius-card);padding:1.75rem;min-width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+      <h3 style="font-family:var(--font-head);font-weight:700;margin:0 0 .5rem">Importa da lista spesa</h3>
+      <p style="font-size:.85rem;color:var(--text-secondary);margin:0 0 1rem">Verranno importati solo gli articoli spuntati.</p>
       <input type="week" id="import-week-input" class="ctrl-input" style="width:100%;margin-bottom:1rem">
       <div style="display:flex;gap:.5rem;justify-content:center">
         <button id="import-confirm" class="btn-primary">Importa</button>
