@@ -24,6 +24,8 @@ $csrf = $_SESSION['csrf_token'];
     <a href="index.php"  class="nav-link">Pianifica</a>
     <a href="admin.php"  class="nav-link active">Admin</a>
     <a href="family.php" class="nav-link">Famiglia</a>
+    <a href="lista.php"  class="nav-link">🛒 Lista spesa</a>
+    <a href="pantry.php" class="nav-link">🏪 Dispensa</a>
   </nav>
   <div class="topbar-user">
     <button id="btn-logout" class="btn-ghost-sm">Esci</button>

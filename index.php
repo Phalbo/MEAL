@@ -30,6 +30,7 @@ $csrf = $_SESSION['csrf_token'];
     <a href="admin.php"  class="nav-link">Admin</a>
     <a href="family.php" class="nav-link">Famiglia</a>
     <a id="nav-lista" href="lista.php" class="nav-link">🛒 Lista spesa</a>
+    <a href="pantry.php" class="nav-link">🏪 Dispensa</a>
   </nav>
   <div class="topbar-user">
     <span id="user-label" class="user-label"></span>

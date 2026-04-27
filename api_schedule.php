@@ -1,4 +1,58 @@
 <?php
+function apiScheduleAutofill(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = $in['week_start'] ?? '';
+    if (!$weekStart) respondError('week_start obbligatorio');
+
+    $slotRules = [
+        'colazione' => ['Colazione'],
+        'pranzo'    => ['Primo', 'Secondo', 'Altro'],
+        'cena'      => ['Primo', 'Secondo', 'Altro'],
+    ];
+
+    // piatti disponibili (famiglia + sistema)
+    $ms = $pdo->prepare("SELECT m.id, m.name, m.emoji, mc.name as category
+        FROM meals m LEFT JOIN meal_categories mc ON mc.id = m.category_id
+        WHERE (m.family_id = ? OR m.is_system = 1)");
+    $ms->execute([$familyId]);
+    $byCategory = [];
+    foreach ($ms->fetchAll() as $m) $byCategory[$m['category']][] = $m;
+
+    // slot già occupati
+    $ex = $pdo->prepare("SELECT day_index, slot FROM schedule
+        WHERE family_id=? AND week_start=? AND meal_id IS NOT NULL");
+    $ex->execute([$familyId, $weekStart]);
+    $occupied = [];
+    foreach ($ex->fetchAll() as $r) $occupied[$r['day_index'].'_'.$r['slot']] = true;
+
+    $ins = $pdo->prepare("INSERT OR IGNORE INTO schedule
+        (family_id, week_start, day_index, slot, meal_id, created_by)
+        VALUES (?,?,?,?,?,?)
+        ON CONFLICT(family_id,week_start,day_index,slot) DO NOTHING");
+
+    $filled = 0;
+    $usedYesterday = [];
+
+    for ($day = 0; $day < 7; $day++) {
+        $todayCategories = [];
+        foreach (['colazione','pranzo','cena'] as $slot) {
+            if (isset($occupied[$day.'_'.$slot])) continue;
+            $candidates = [];
+            foreach ($slotRules[$slot] as $cat)
+                if (!empty($byCategory[$cat])) $candidates = array_merge($candidates, $byCategory[$cat]);
+            if (!$candidates) continue;
+            $yesterdayCat = $usedYesterday[$slot] ?? null;
+            $filtered = array_values(array_filter($candidates, fn($m) => $m['category'] !== $yesterdayCat));
+            $pick = ($filtered ?: $candidates)[array_rand($filtered ?: $candidates)];
+            $ins->execute([$familyId, $weekStart, $day, $slot, $pick['id'], $_SESSION['user_id']]);
+            $todayCategories[$slot] = $pick['category'];
+            $filled++;
+        }
+        $usedYesterday = $todayCategories;
+    }
+    respond(['success' => true, 'filled' => $filled]);
+}
+
 function apiScheduleGet(PDO $pdo): never {
     $familyId  = $_SESSION['family_id'];
     $weekStart = $_GET['week_start'] ?? '';

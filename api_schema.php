@@ -130,6 +130,19 @@ function initSchema(PDO $pdo): void {
         unit_weights TEXT DEFAULT '{}'
     )");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS pantry_items (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        family_id       INTEGER NOT NULL,
+        ingredient_name TEXT NOT NULL,
+        quantity        REAL,
+        unit            TEXT,
+        zone            TEXT DEFAULT 'scaffali',
+        expiry_date     TEXT,
+        updated_at      TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (family_id) REFERENCES families(id),
+        UNIQUE (family_id, ingredient_name, unit)
+    )");
+
     // Migration: share_token (safe on existing DB)
     try { $pdo->exec("ALTER TABLE families ADD COLUMN share_token TEXT UNIQUE"); } catch (Exception $e) {}
     // Migration: is_system meals

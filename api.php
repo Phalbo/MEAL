@@ -8,6 +8,7 @@ require_once __DIR__ . '/api_family.php';
 require_once __DIR__ . '/api_meals.php';
 require_once __DIR__ . '/api_schedule.php';
 require_once __DIR__ . '/api_shopping.php';
+require_once __DIR__ . '/api_pantry.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -124,6 +125,7 @@ match ($action) {
     'schedule_clear'       => apiScheduleClear($pdo, $input),
     'schedule_exception'   => apiScheduleException($pdo, $input),
     'schedule_copy'        => apiScheduleCopy($pdo, $input),
+    'schedule_autofill'    => apiScheduleAutofill($pdo, $input),
     'shopping_generate'    => apiShoppingGenerate($pdo, $input),
     'shopping_list'        => apiShoppingList($pdo),
     'shopping_check'       => apiShoppingCheck($pdo, $input),
@@ -132,5 +134,10 @@ match ($action) {
     'shopping_export_text'  => apiShoppingExportText($pdo),
     'shopping_list_pub'     => apiShoppingListPub($pdo),
     'shopping_check_pub'    => apiShoppingCheckPub($pdo, $input),
+    'pantry_list'           => apiPantryList($pdo),
+    'pantry_update'         => apiPantryUpdate($pdo, $input),
+    'pantry_delete'         => apiPantryDelete($pdo, $input),
+    'pantry_from_shopping'  => apiPantryFromShopping($pdo, $input),
+    'pantry_consume'        => apiPantryConsume($pdo, $input),
     default                => respondError('Azione non riconosciuta', 404),
 };

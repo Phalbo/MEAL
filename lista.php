@@ -25,6 +25,7 @@ $weekStart = $_GET['week'] ?? date('Y-m-d', strtotime('monday this week'));
 <header class="lista-header">
   <div class="lista-header-top">
     <a href="index.php" class="lista-back">← Torna al planner</a>
+    <a href="pantry.php" class="lista-back" style="margin-left:.75rem">🏪 Dispensa</a>
     <span id="live-badge" class="live-badge">🔴 LIVE</span>
   </div>
   <div class="lista-header-info">
