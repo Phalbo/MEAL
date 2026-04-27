@@ -14,17 +14,16 @@ $csrf = $_SESSION['csrf_token'];
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf) ?>">
   <title>Famiglia — Meal Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
   <div class="topbar-brand"><span class="brand-emoji">🍽️</span><span class="brand-name">Meal Planner</span></div>
   <nav class="topbar-nav">
-    <a href="index.php"  class="nav-link">Pianifica</a>
-    <a href="admin.php"  class="nav-link">Admin</a>
-    <a href="family.php" class="nav-link active">Famiglia</a>
-    <a href="lista.php"  class="nav-link">🛒 Lista spesa</a>
+    <a href="index.php"  class="nav-link">📅 Pianifica</a>
+    <a href="admin.php"  class="nav-link">🍝 Ricette</a>
+    <a href="family.php" class="nav-link active">👥 Famiglia</a>
+    <a href="lista.php"  class="nav-link">🛒 Spesa</a>
     <a href="pantry.php" class="nav-link">🏪 Dispensa</a>
   </nav>
   <div class="topbar-user"><button id="btn-logout" class="btn-ghost-sm">Esci</button></div>
