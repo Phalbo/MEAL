@@ -20,6 +20,26 @@ $appName = APP_NAME;
   <title><?= $appName ?> — Accedi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .pw-wrap { position: relative; }
+    .pw-wrap input { width: 100%; padding-right: 2.4rem; box-sizing: border-box; }
+    .pw-eye {
+      position: absolute; right: .5rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; font-size: 1.1rem;
+      color: var(--text-secondary); padding: .15rem .2rem; line-height: 1;
+    }
+    .pw-eye:hover { color: var(--primary); }
+    .remember-row {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .85rem; color: var(--text-secondary); margin: .25rem 0 .75rem;
+    }
+    .remember-row input[type=checkbox] { accent-color: var(--primary); width: 15px; height: 15px; }
+    .forgot-link {
+      display: block; text-align: center; margin-top: .75rem;
+      font-size: .82rem; color: var(--text-secondary); text-decoration: none;
+    }
+    .forgot-link:hover { color: var(--primary); }
+  </style>
 </head>
 <body class="auth-body">
 
@@ -40,8 +60,16 @@ $appName = APP_NAME;
       <div class="form-group"><label>Email</label>
         <input type="email" id="l-email" placeholder="mario@rossi.it"></div>
       <div class="form-group"><label>Password</label>
-        <input type="password" id="l-pw" placeholder="••••••"></div>
+        <div class="pw-wrap">
+          <input type="password" id="l-pw" placeholder="••••••">
+          <button type="button" class="pw-eye" data-for="l-pw" title="Mostra/nascondi password">👁</button>
+        </div>
+      </div>
+      <label class="remember-row">
+        <input type="checkbox" id="l-remember"> Rimani connesso per 30 giorni
+      </label>
       <button class="btn-primary w100" id="btn-login">Accedi</button>
+      <a href="recover.php" class="forgot-link">Password dimenticata?</a>
     </div>
 
     <div id="tab-register" class="auth-form" style="display:none">
@@ -50,7 +78,11 @@ $appName = APP_NAME;
       <div class="form-group"><label>Email</label>
         <input type="email" id="r-email" placeholder="mario@rossi.it"></div>
       <div class="form-group"><label>Password</label>
-        <input type="password" id="r-pw" placeholder="min. 6 caratteri"></div>
+        <div class="pw-wrap">
+          <input type="password" id="r-pw" placeholder="min. 6 caratteri">
+          <button type="button" class="pw-eye" data-for="r-pw" title="Mostra/nascondi password">👁</button>
+        </div>
+      </div>
       <button class="btn-primary w100" id="btn-register">Crea account</button>
     </div>
   </div>
@@ -103,7 +135,16 @@ function showFamily() {
   document.getElementById('step-family').style.display = '';
 }
 
-// tab switching
+// ── Toggle visibilità password ──
+document.querySelectorAll('.pw-eye').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.for);
+    input.type  = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+  });
+});
+
+// ── Tab switching ──
 document.querySelectorAll('.auth-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     const parent = btn.closest('.auth-card');
@@ -115,8 +156,11 @@ document.querySelectorAll('.auth-tab').forEach(btn => {
 });
 
 document.getElementById('btn-login').addEventListener('click', async () => {
-  const d = await post('login', {email: document.getElementById('l-email').value,
-                                  password: document.getElementById('l-pw').value});
+  const d = await post('login', {
+    email:    document.getElementById('l-email').value,
+    password: document.getElementById('l-pw').value,
+    remember: document.getElementById('l-remember').checked ? 1 : 0,
+  });
   if (d.error) return msg(d.error);
   d.family ? location.href='index.php' : showFamily();
 });

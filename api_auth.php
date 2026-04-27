@@ -1,7 +1,8 @@
 <?php
 function apiLogin(PDO $pdo, array $in): never {
-    $email = trim($in['email'] ?? '');
-    $pw    = $in['password'] ?? '';
+    $email    = trim($in['email'] ?? '');
+    $pw       = $in['password'] ?? '';
+    $remember = !empty($in['remember']);
     if (!$email || !$pw) respondError('Email e password obbligatorie');
 
     $st = $pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -12,6 +13,19 @@ function apiLogin(PDO $pdo, array $in): never {
         respondError('Credenziali non valide', 401);
 
     $_SESSION['user_id'] = $user['id'];
+
+    // sessione lunga 30 giorni se "rimani connesso"
+    if ($remember) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), session_id(), [
+            'expires'  => time() + 30 * 24 * 3600,
+            'path'     => $params['path'],
+            'domain'   => $params['domain'],
+            'secure'   => $params['secure'],
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
 
     // recupera famiglia
     $fs = $pdo->prepare("
@@ -72,6 +86,70 @@ function apiMe(PDO $pdo): never {
         $family = $fs->fetch() ?: null;
     }
     respond(['user' => $user, 'family' => $family]);
+}
+
+function apiPasswordResetRequest(PDO $pdo, array $in): never {
+    $email = mb_strtolower(trim($in['email'] ?? ''));
+    if (!$email) respondError('Email obbligatoria');
+
+    // crea tabella se non esiste
+    $pdo->exec("CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    INTEGER NOT NULL,
+        token      TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        used       INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )");
+
+    $st = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+    $st->execute([$email]);
+    $user = $st->fetch();
+
+    // risposta generica per non rivelare se l'email esiste
+    if (!$user) respond(['success' => true, 'message' => 'Se l\'email esiste riceverai le istruzioni.']);
+
+    $token     = bin2hex(random_bytes(20));
+    $expiresAt = date('Y-m-d H:i:s', time() + 3600);
+
+    // invalida token precedenti
+    $pdo->prepare("UPDATE password_reset_tokens SET used=1 WHERE user_id=? AND used=0")
+        ->execute([$user['id']]);
+
+    $pdo->prepare("INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?,?,?)")
+        ->execute([$user['id'], $token, $expiresAt]);
+
+    // in produzione qui si invierebbe l'email; per ora restituiamo il token in chiaro
+    respond(['success' => true, 'token' => $token, 'expires_at' => $expiresAt]);
+}
+
+function apiPasswordResetDo(PDO $pdo, array $in): never {
+    $token = trim($in['token'] ?? '');
+    $pw    = $in['password'] ?? '';
+
+    if (!$token)         respondError('Token obbligatorio');
+    if (strlen($pw) < 6) respondError('Password minimo 6 caratteri');
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL,
+        token TEXT NOT NULL, expires_at TEXT NOT NULL, used INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+    )");
+
+    $st = $pdo->prepare("
+        SELECT * FROM password_reset_tokens
+        WHERE token=? AND used=0 AND expires_at > datetime('now')
+    ");
+    $st->execute([$token]);
+    $row = $st->fetch();
+    if (!$row) respondError('Token non valido o scaduto', 400);
+
+    $hash = password_hash($pw, PASSWORD_BCRYPT);
+    $pdo->prepare("UPDATE users SET password=? WHERE id=?")->execute([$hash, $row['user_id']]);
+    $pdo->prepare("UPDATE password_reset_tokens SET used=1 WHERE id=?")->execute([$row['id']]);
+
+    respond(['success' => true]);
 }
 
 // ── Seed piatti v1.0 quando si crea una nuova famiglia ───────────────────────
