@@ -144,5 +144,7 @@ match ($action) {
     'pantry_delete'         => apiPantryDelete($pdo, $input),
     'pantry_from_shopping'  => apiPantryFromShopping($pdo, $input),
     'pantry_consume'        => apiPantryConsume($pdo, $input),
+    'pantry_add_manual'     => apiPantryAddManual($pdo, $input),
+    'pantry_clear'          => apiPantryClear($pdo),
     default                => respondError('Azione non riconosciuta', 404),
 };
