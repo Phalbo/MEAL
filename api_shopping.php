@@ -28,14 +28,25 @@ function apiShoppingGenerate(PDO $pdo, array $in): never {
     $ings = $pdo->prepare("SELECT * FROM meal_ingredients WHERE meal_id IN ($ph)");
     $ings->execute($ids);
 
-    // aggregazione: chiave = nome_lower|unit
+    // alias da nutrition_db: alias_lower → nome canonico (per deduplicare "olio"/"olio evo"/...)
+    $aliasMap = [];
+    foreach ($pdo->query("SELECT name, aliases FROM nutrition_db")->fetchAll() as $nd) {
+        $canon = $nd['name'];
+        $aliasMap[mb_strtolower(trim($canon))] = $canon;
+        foreach (json_decode($nd['aliases'] ?? '[]', true) ?: [] as $a)
+            $aliasMap[mb_strtolower(trim($a))] = $canon;
+    }
+
+    // aggregazione: chiave = nome_canonico_lower|unit
     $agg = [];
     foreach ($ings->fetchAll() as $ing) {
-        $factor = $totalPortions * ($counts[(int)$ing['meal_id']] ?? 1);
-        $key    = mb_strtolower(trim($ing['name'])) . '|' . ($ing['unit'] ?? '');
+        $factor    = $totalPortions * ($counts[(int)$ing['meal_id']] ?? 1);
+        $nameLower = mb_strtolower(trim($ing['name']));
+        $canonical = $aliasMap[$nameLower] ?? $ing['name'];
+        $key       = mb_strtolower(trim($canonical)) . '|' . ($ing['unit'] ?? '');
         if (!isset($agg[$key])) {
             $agg[$key] = [
-                'ingredient_name' => $ing['name'],
+                'ingredient_name' => $canonical,
                 'quantity'        => 0.0,
                 'unit'            => $ing['unit'],
                 'price_est'       => 0.0,
@@ -44,6 +55,25 @@ function apiShoppingGenerate(PDO $pdo, array $in): never {
         }
         if ($ing['quantity'])  $agg[$key]['quantity']  += (float)$ing['quantity'] * $factor;
         if ($ing['price_est']) $agg[$key]['price_est'] += (float)$ing['price_est'] * $factor;
+    }
+
+    // ── Filtro ingredienti trascurabili ──────────────────────────────────────
+    $IGNORE_ALWAYS = ['sale','pepe','pepe nero','pepe bianco',
+                      'acqua','acqua di cottura','ghiaccio'];
+    $MIN_QTY = [
+        'cucchiaio'  => 4, 'cucchiai'   => 4,
+        'cucchiaino' => 6, 'cucchiaini' => 6,
+        'foglia'     => 8, 'foglie'     => 8,
+        'rametto'    => 3, 'rametti'    => 3,
+        'spruzzo'    => 999, 'pizzico'  => 999,
+        'bustina'    => 2,
+    ];
+    foreach ($agg as $k => $item) {
+        $nl   = mb_strtolower(trim($item['ingredient_name']));
+        $unit = mb_strtolower(trim($item['unit'] ?? ''));
+        if (in_array($nl, $IGNORE_ALWAYS)) { unset($agg[$k]); continue; }
+        if (isset($MIN_QTY[$unit]) && ($item['quantity'] ?? 0) < $MIN_QTY[$unit]) { unset($agg[$k]); continue; }
+        if (in_array($unit, ['q.b.','qb','a piacere']) && !$item['quantity'])     { unset($agg[$k]); continue; }
     }
 
     // prezzi storici (media ultimi 3)
