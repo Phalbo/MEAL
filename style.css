@@ -120,3 +120,118 @@ body {
   border-radius: var(--radius-btn);
 }
 .btn-hamburger:hover { background: var(--bg); }
+
+/* ── LAYOUT ─────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-area {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────── */
+.sidebar {
+  width: 240px;
+  min-width: 220px;
+  background: var(--card);
+  border-right: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding: 1rem .75rem;
+  overflow-y: auto;
+  height: calc(100vh - 52px);
+  position: sticky;
+  top: 52px;
+}
+
+.sidebar-controls { display: flex; flex-direction: column; gap: .5rem; }
+
+.ctrl-input, .ctrl-select {
+  width: 100%;
+  padding: .5rem .75rem;
+  border: 1.5px solid var(--border-soft);
+  border-radius: var(--radius-btn);
+  font-family: var(--font-body);
+  font-size: .82rem;
+  background: var(--bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.ctrl-input:focus, .ctrl-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255,107,74,.15);
+}
+
+/* ── MEAL CARDS sidebar ──────────────────────────── */
+.meal-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  overflow-y: auto;
+}
+
+.meal-card {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .6rem .7rem;
+  background: var(--bg);
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  cursor: grab;
+  user-select: none;
+  transition: all .18s;
+}
+.meal-card:hover        { border-color: var(--primary); background: var(--primary-soft); }
+.meal-card.dragging     { opacity: .4; }
+.meal-card.meal-conflict { border-color: var(--orange-soft); background: #FFF8F0; }
+
+.meal-card .mc-emoji { font-size: 1.25rem; flex-shrink: 0; }
+.meal-card .mc-info  { flex: 1; min-width: 0; }
+.meal-card .mc-name  { font-size: .8rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meal-card .mc-cal   { font-size: .72rem; color: var(--text-secondary); }
+.meal-card .mc-cat   {
+  display: inline-block;
+  font-size: .67rem;
+  font-weight: 600;
+  padding: .1rem .45rem;
+  border-radius: var(--radius-pill);
+  background: var(--primary-soft);
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-top: .15rem;
+}
+
+.btn-random {
+  width: 100%;
+  padding: .65rem;
+  background: var(--primary-grad);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  margin-top: auto;
+  box-shadow: var(--shadow-btn);
+}
+.btn-random:hover { transform: scale(0.98); }
+
+/* sidebar overlay */
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 199; }
+.sidebar-overlay.active { display: block; }
