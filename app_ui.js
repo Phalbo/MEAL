@@ -1,5 +1,69 @@
 /* ── Meal Planner v2.0 — app_ui.js (calendar, drag&drop, calories, shopping) ── */
 
+// ── Touch drag state ──────────────────────────────────────────────────────────
+let touchDragMeal = null;
+let touchGhost    = null;
+let touchFromKey  = '';
+
+// Logica drop condivisa tra desktop e touch
+async function dropMealOnCell(meal, targetKey, fromKey = '') {
+  const [di, si] = targetKey.split('_').map(Number);
+  if (fromKey && fromKey !== targetKey) {
+    const occupant = state.schedule[targetKey] || null;
+    const [fd, fs] = fromKey.split('_').map(Number);
+    if (occupant) {
+      state.schedule[fromKey] = occupant;
+      await post('schedule_set', { week_start: state.week, day_index: fd, slot: SLOTS[fs], meal_id: occupant.id });
+    } else {
+      delete state.schedule[fromKey];
+      await post('schedule_set', { week_start: state.week, day_index: fd, slot: SLOTS[fs], meal_id: null });
+    }
+  }
+  state.schedule[targetKey] = meal;
+  await post('schedule_set', { week_start: state.week, day_index: di, slot: SLOTS[si], meal_id: meal.id });
+  renderCalendar(); updateBottom();
+  showToast(`${meal.emoji} ${meal.name} aggiunto`);
+}
+
+// Aggiunge touch drag a un elemento (sidebar card o cell-meal)
+function addTouchDrag(element, meal, fromKey = '') {
+  element.addEventListener('touchstart', () => {
+    touchDragMeal = meal; touchFromKey = fromKey;
+    const g = element.cloneNode(true);
+    g.style.cssText = 'position:fixed;opacity:.75;pointer-events:none;z-index:9999;width:130px;border-radius:8px;overflow:hidden;transform:scale(1.05)';
+    document.body.appendChild(g);
+    touchGhost = g;
+  }, { passive: true });
+
+  element.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    if (touchGhost) { touchGhost.style.left = (t.clientX - 65) + 'px'; touchGhost.style.top = (t.clientY - 30) + 'px'; }
+    document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('drag-over'));
+    document.elementFromPoint(t.clientX, t.clientY)?.closest('.cal-cell')?.classList.add('drag-over');
+  }, { passive: false });
+
+  element.addEventListener('touchend', e => {
+    const t = e.changedTouches[0];
+    if (touchGhost) { touchGhost.remove(); touchGhost = null; }
+    document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('drag-over'));
+    const cell = document.elementFromPoint(t.clientX, t.clientY)?.closest('.cal-cell');
+    if (cell && touchDragMeal) dropMealOnCell(touchDragMeal, cell.dataset.key, touchFromKey);
+    touchDragMeal = null; touchFromKey = '';
+  });
+}
+
+// Piatto random → primo slot vuoto della settimana
+function addRandomToFirst(meal) {
+  for (let di = 0; di < 7; di++) {
+    for (let si = 0; si < SLOTS.length; si++) {
+      const key = `${di}_${si}`;
+      if (!state.schedule[key]) { dropMealOnCell(meal, key); return; }
+    }
+  }
+  showToast('⚠️ Tutti gli slot sono occupati');
+}
+
 // ── Calendar ─────────────────────────────────────────────────────────────────
 function renderCalendar() {
   const grid = document.getElementById('calendar-grid');
@@ -44,6 +108,7 @@ function makeCell(dayIndex, slotIndex) {
       e.dataTransfer.setData('fromKey', key);
       e.stopPropagation();
     });
+    addTouchDrag(inner, meal, key);
 
     inner.querySelector('.cell-remove').addEventListener('click', async e => {
       e.stopPropagation();
@@ -104,33 +169,9 @@ function makeCell(dayIndex, slotIndex) {
   cell.addEventListener('drop', async e => {
     e.preventDefault();
     cell.classList.remove('drag-over');
-
-    const mealId  = parseInt(e.dataTransfer.getData('mealId'));
-    const fromKey = e.dataTransfer.getData('fromKey');
-    const found   = state.meals.find(m => m.id === mealId);
+    const found = state.meals.find(m => m.id === parseInt(e.dataTransfer.getData('mealId')));
     if (!found) return;
-
-    // swap se trascinato da un'altra cella
-    if (fromKey && fromKey !== key) {
-      const occupant = state.schedule[key] || null;
-      const [fd, fs] = fromKey.split('_').map(Number);
-      if (occupant) {
-        state.schedule[fromKey] = occupant;
-        await post('schedule_set', { week_start: state.week, day_index: fd,
-          slot: SLOTS[fs], meal_id: occupant.id });
-      } else {
-        delete state.schedule[fromKey];
-        await post('schedule_set', { week_start: state.week, day_index: fd,
-          slot: SLOTS[fs], meal_id: null });
-      }
-    }
-
-    state.schedule[key] = found;
-    await post('schedule_set', { week_start: state.week, day_index: dayIndex,
-      slot: SLOTS[slotIndex], meal_id: found.id });
-
-    renderCalendar(); updateBottom();
-    showToast(`${found.emoji} ${found.name} aggiunto`);
+    await dropMealOnCell(found, key, e.dataTransfer.getData('fromKey'));
   });
 
   return cell;
@@ -281,8 +322,8 @@ function el(tag, cls, text) {
   const e = document.createElement(tag);
   e.className = cls; e.textContent = text; return e;
 }
-function showToast(msg) {
+function showToast(html, duration = 2800) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  t.innerHTML = html; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
 }

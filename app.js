@@ -159,6 +159,7 @@ function renderSidebar(meals) {
       card.classList.add('dragging');
     });
     card.addEventListener('dragend', () => card.classList.remove('dragging'));
+    addTouchDrag(card, meal);
     list.appendChild(card);
   });
 }
@@ -205,7 +206,12 @@ function bindControls() {
   document.getElementById('btn-random').addEventListener('click', () => {
     if (!state.meals.length) return;
     const m = state.meals[Math.floor(Math.random() * state.meals.length)];
-    showToast(`🎲 ${m.emoji} ${m.name} (${m.cal_per_adult} kcal)`);
+    window._rndMeal = m;
+    showToast(
+      `🎲 ${m.emoji} ${m.name} (${m.cal_per_adult} kcal)` +
+      ` <button onclick="addRandomToFirst(window._rndMeal)" style="margin-left:.5rem;background:var(--terra);color:#fff;border:none;border-radius:4px;padding:.18rem .5rem;font-size:.75rem;cursor:pointer">+ Slot vuoto</button>`,
+      5000
+    );
   });
   document.getElementById('btn-copy-list').addEventListener('click', copyShoppingList);
 
