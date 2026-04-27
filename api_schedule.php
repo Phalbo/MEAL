@@ -92,8 +92,8 @@ function apiScheduleSet(PDO $pdo, array $in): never {
         respond(['success' => true]);
     }
 
-    // verifica che il piatto appartenga alla famiglia
-    $own = $pdo->prepare("SELECT id FROM meals WHERE id=? AND family_id=?");
+    // verifica che il piatto appartenga alla famiglia o sia un piatto di sistema
+    $own = $pdo->prepare("SELECT id FROM meals WHERE id=? AND (family_id=? OR is_system=1)");
     $own->execute([$mealId, $familyId]);
     if (!$own->fetch()) respondError('Piatto non trovato', 404);
 

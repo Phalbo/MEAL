@@ -95,7 +95,7 @@ $csrf = $_SESSION['csrf_token'];
   <div id="pantry-list"></div>
 
   <!-- Import da lista: seleziona settimana -->
-  <div id="import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center">
+  <div id="import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center">
     <div style="background:#fff;border-radius:12px;padding:1.5rem;min-width:280px;text-align:center">
       <h3 style="margin:0 0 1rem">Importa da lista spesa</h3>
       <p style="font-size:.85rem;color:#666;margin:0 0 .75rem">Seleziona la settimana di riferimento (saranno importati solo gli articoli spuntati).</p>
