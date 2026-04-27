@@ -43,6 +43,7 @@ $csrf = $_SESSION['csrf_token'];
     <h1 style="font-family:var(--font-head);font-size:1.6rem;font-weight:700;margin:0">🏪 Dispensa</h1>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap">
       <button id="btn-from-shopping" class="btn-ghost">🛒 Importa da lista</button>
+      <button id="btn-clear-pantry"  class="btn-ghost" style="color:#c84b2d">🗑 Svuota dispensa</button>
       <button id="btn-add-item"      class="btn-primary">+ Aggiungi</button>
     </div>
   </div>
@@ -73,6 +74,8 @@ $csrf = $_SESSION['csrf_token'];
           <option value="latticini">🧀 Latticini</option>
           <option value="bevande">🍾 Bevande</option>
           <option value="surgelati">❄️ Surgelati</option>
+          <option value="casalinghi">🏠 Casalinghi</option>
+          <option value="altro">📦 Altro</option>
         </select>
       </div>
       <div>

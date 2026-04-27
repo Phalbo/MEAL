@@ -251,3 +251,61 @@ function apiShoppingResetChecks(PDO $pdo, array $in): never {
         ->execute([$_SESSION['family_id'], $weekStart]);
     respond(['success' => true]);
 }
+
+function apiShoppingAddManual(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $name      = trim($in['name']       ?? '');
+    $qty       = isset($in['quantity']) && $in['quantity'] !== '' ? (float)$in['quantity'] : null;
+    $unit      = trim($in['unit']       ?? '') ?: null;
+    $zone      = trim($in['zone']       ?? 'altro');
+    $weekStart = trim($in['week_start'] ?? '');
+
+    if (!$name)      respondError('name obbligatorio');
+    if (!$weekStart) respondError('week_start obbligatorio');
+
+    // arricchisce nutrition_db se l'ingrediente non esiste
+    $check = $pdo->prepare("SELECT id FROM nutrition_db WHERE LOWER(name)=LOWER(?)");
+    $check->execute([$name]);
+    if (!$check->fetch()) {
+        $pdo->prepare("INSERT OR IGNORE INTO nutrition_db (name, kcal_100g, zone) VALUES (?,0,?)")
+            ->execute([$name, $zone]);
+    }
+
+    $zo        = ZONE_ORDER;
+    $zoneOrder = $zo[$zone] ?? 9;
+
+    $ins = $pdo->prepare("INSERT INTO shopping_items
+        (family_id, week_start, ingredient_name, quantity, unit, zone, zone_order, is_manual, custom_zone)
+        VALUES (?,?,?,?,?,?,?,1,?)");
+    $ins->execute([$familyId, $weekStart, $name, $qty, $unit, $zone, $zoneOrder, $zone]);
+
+    $id = (int)$pdo->lastInsertId();
+    respond([
+        'success' => true,
+        'id'      => $id,
+        'ingredient_name' => $name,
+        'quantity'   => $qty,
+        'unit'       => $unit,
+        'zone'       => $zone,
+        'zone_order' => $zoneOrder,
+        'is_manual'  => 1,
+        'checked'    => 0,
+    ]);
+}
+
+function apiShoppingClear(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = trim($in['week_start'] ?? '');
+    $mode      = trim($in['mode']       ?? 'all');
+
+    if (!$weekStart) respondError('week_start obbligatorio');
+
+    if ($mode === 'checked') {
+        $pdo->prepare("DELETE FROM shopping_items WHERE family_id=? AND week_start=? AND checked=1")
+            ->execute([$familyId, $weekStart]);
+    } else {
+        $pdo->prepare("DELETE FROM shopping_items WHERE family_id=? AND week_start=?")
+            ->execute([$familyId, $weekStart]);
+    }
+    respond(['success' => true]);
+}

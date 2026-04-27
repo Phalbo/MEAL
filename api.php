@@ -87,7 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pdo = getDB();
 
 // Public (no auth, no CSRF)
-$public = ['login', 'register', 'shopping_list_pub', 'shopping_check_pub'];
+$public = ['login', 'register', 'shopping_list_pub', 'shopping_check_pub',
+           'password_reset_request', 'password_reset_do'];
 // Auth required but no family needed
 $noFamily = ['logout', 'me', 'csrf_token', 'family_create', 'family_join'];
 
@@ -99,10 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !in_array($action, $public))
 // ── Router ────────────────────────────────────────────────────────────────────
 match ($action) {
     'csrf_token'           => respond(['token' => getCsrfToken()]),
-    'login'                => apiLogin($pdo, $input),
-    'register'             => apiRegister($pdo, $input),
-    'logout'               => apiLogout(),
-    'me'                   => apiMe($pdo),
+    'login'                    => apiLogin($pdo, $input),
+    'register'                 => apiRegister($pdo, $input),
+    'logout'                   => apiLogout(),
+    'me'                       => apiMe($pdo),
+    'password_reset_request'   => apiPasswordResetRequest($pdo, $input),
+    'password_reset_do'        => apiPasswordResetDo($pdo, $input),
     'family_create'        => apiFamilyCreate($pdo, $input),
     'family_join'          => apiFamilyJoin($pdo, $input),
     'family_members'       => apiFamilyMembers($pdo),
@@ -132,6 +135,8 @@ match ($action) {
     'shopping_price_update'=> apiShoppingPriceUpdate($pdo, $input),
     'shopping_reset_checks' => apiShoppingResetChecks($pdo, $input),
     'shopping_export_text'  => apiShoppingExportText($pdo),
+    'shopping_add_manual'   => apiShoppingAddManual($pdo, $input),
+    'shopping_clear'        => apiShoppingClear($pdo, $input),
     'shopping_list_pub'     => apiShoppingListPub($pdo),
     'shopping_check_pub'    => apiShoppingCheckPub($pdo, $input),
     'pantry_list'           => apiPantryList($pdo),
@@ -139,5 +144,7 @@ match ($action) {
     'pantry_delete'         => apiPantryDelete($pdo, $input),
     'pantry_from_shopping'  => apiPantryFromShopping($pdo, $input),
     'pantry_consume'        => apiPantryConsume($pdo, $input),
+    'pantry_add_manual'     => apiPantryAddManual($pdo, $input),
+    'pantry_clear'          => apiPantryClear($pdo),
     default                => respondError('Azione non riconosciuta', 404),
 };
