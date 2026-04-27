@@ -14,17 +14,16 @@ $csrf = $_SESSION['csrf_token'];
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf) ?>">
   <title>Admin — Meal Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
   <div class="topbar-brand"><span class="brand-emoji">🍽️</span><span class="brand-name">Meal Planner</span></div>
   <nav class="topbar-nav">
-    <a href="index.php"  class="nav-link">Pianifica</a>
-    <a href="admin.php"  class="nav-link active">Admin</a>
-    <a href="family.php" class="nav-link">Famiglia</a>
-    <a href="lista.php"  class="nav-link">🛒 Lista spesa</a>
+    <a href="index.php"  class="nav-link">📅 Pianifica</a>
+    <a href="admin.php"  class="nav-link active">🍝 Ricette</a>
+    <a href="family.php" class="nav-link">👥 Famiglia</a>
+    <a href="lista.php"  class="nav-link">🛒 Spesa</a>
     <a href="pantry.php" class="nav-link">🏪 Dispensa</a>
   </nav>
   <div class="topbar-user">
@@ -84,8 +83,8 @@ $csrf = $_SESSION['csrf_token'];
 
   <!-- TABLE -->
   <div class="table-card">
-    <div style="padding:1rem 1rem .5rem;display:flex;align-items:center;justify-content:space-between">
-      <strong style="font-family:var(--font-head);font-size:1.1rem">Piatti nel database</strong>
+    <div style="padding:1rem 1rem .5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+      <strong style="font-family:var(--font-head);font-size:1.1rem;font-weight:700">Piatti nel database</strong>
       <input type="text" class="admin-search" id="admin-search" placeholder="🔍 Filtra…">
     </div>
     <table class="admin-table">
