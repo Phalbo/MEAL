@@ -21,7 +21,10 @@ const state = {
 async function get(action, params = {}) {
   const qs  = new URLSearchParams({ action, ...params });
   const res = await fetch(`${API}?${qs}`);
-  return res.json();
+  if (!res.ok && res.status !== 200) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch { throw new Error('Risposta non JSON: ' + text.slice(0, 120)); }
 }
 
 async function post(action, data = {}) {
@@ -30,7 +33,9 @@ async function post(action, data = {}) {
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({ action, csrf_token: CSRF(), ...data }),
   });
-  return res.json();
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch { return { error: 'Risposta non JSON' }; }
 }
 
 // ── Week helpers ─────────────────────────────────────────────────────────────
@@ -57,14 +62,24 @@ function formatWeekLabel(monday) {
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
+  let me;
   try {
-    const me = await get('me');
-    if (me.error) { location.href = 'login.php'; return; }
-    state.user   = me.user;
-    state.family = me.family;
-    document.getElementById('user-label').textContent =
-      `${me.user.avatar_emoji || '👤'} ${me.user.name}`;
-  } catch { location.href = 'login.php'; return; }
+    me = await get('me');
+  } catch (e) {
+    // errore di rete o risposta non JSON — non fare redirect, mostra avviso
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:1rem">
+      <p style="font-size:1.1rem;color:#c84b2d">⚠️ Impossibile contattare il server.</p>
+      <pre style="font-size:.75rem;color:#666;background:#f5f5f5;padding:.75rem;border-radius:8px;max-width:500px;overflow:auto">${e.message}</pre>
+      <a href="login.php" style="color:#FF6B4A">→ Torna al login</a>
+    </div>`;
+    return;
+  }
+  if (me.error) { location.href = 'login.php'; return; }
+
+  state.user   = me.user;
+  state.family = me.family;
+  document.getElementById('user-label').textContent =
+    `${me.user.avatar_emoji || '👤'} ${me.user.name}`;
 
   await Promise.all([loadMeals(), loadProfiles()]);
   await loadSchedule();
