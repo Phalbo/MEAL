@@ -108,10 +108,17 @@ function mealHasConflict(meal) {
   return flags.some(f => familyIntol.includes(f));
 }
 
+// ── Schedule ─────────────────────────────────────────────────────────────────
+let _schedSeq = 0; // sequenza per evitare race condition su navigazione rapida
+
 async function loadSchedule() {
+  const seq = ++_schedSeq;
+  // Mostra subito griglia vuota — il calendario non sparisce mai
+  state.schedule = {};
+  renderCalendar(); updateBottom();
   try {
     const rows = await get('schedule_get', { week_start: state.week });
-    state.schedule = {};
+    if (seq !== _schedSeq) return; // risposta superata da navigazione più recente
     if (!Array.isArray(rows)) return;
     rows.forEach(row => {
       const si = SLOTS.indexOf(row.slot);
@@ -123,7 +130,12 @@ async function loadSchedule() {
         is_exception: row.is_exception,
       };
     });
-  } catch { state.schedule = {}; }
+    renderCalendar(); updateBottom();
+  } catch {
+    if (seq !== _schedSeq) return;
+    state.schedule = {};
+    renderCalendar(); updateBottom();
+  }
 }
 
 function updateWeekLabel() {
