@@ -13,10 +13,9 @@ $weekStart = $_GET['week'] ?? date('Y-m-d', strtotime('monday this week'));
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf) ?>">
-  <meta name="theme-color" content="#1C1C1A">
+  <meta name="theme-color" content="#FF6B4A">
   <title>🛒 Lista spesa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="lista.css">
 </head>
