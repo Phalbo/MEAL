@@ -943,3 +943,45 @@ body {
   .bottom-nav { display: block; }
   .toast { bottom: 5rem; }
 }
+
+/* ── HERO CARD (index.php) ───────────────────────── */
+.hero-card {
+  background: var(--card);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.hero-emoji-wrap {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.hero-text h1 {
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+.hero-text p {
+  font-size: .83rem;
+  color: var(--text-secondary);
+  margin-top: .2rem;
+}
+
+/* ── PAGE MAIN (pantry, standalone pages) ────────── */
+.page-main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 5rem;
+  width: 100%;
+}
+
+/* ── MISC ────────────────────────────────────────── */
+.cell-exception { font-size: .75rem; cursor: help; position: absolute; bottom: 2px; left: 4px; }
