@@ -67,6 +67,7 @@ $csrf = $_SESSION['csrf_token'];
           <button id="btn-next-week" class="btn-ghost">›</button>
         </div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button id="btn-autofill"  class="btn-ghost">🎲 Popola settimana</button>
           <button id="btn-copy-week" class="btn-ghost" title="Copia piano dalla settimana precedente">📋 Copia sett.</button>
           <button id="btn-clear-all" class="btn-ghost">🗑 Svuota</button>
           <button id="btn-gen-shopping" class="btn-ghost">🛒 Genera lista</button>

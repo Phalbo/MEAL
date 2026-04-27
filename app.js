@@ -227,6 +227,14 @@ function bindControls() {
   });
   document.getElementById('btn-copy-list').addEventListener('click', copyShoppingList);
 
+  document.getElementById('btn-autofill')?.addEventListener('click', async () => {
+    if (!confirm('Popola automaticamente gli slot vuoti di questa settimana?')) return;
+    const res = await post('schedule_autofill', { week_start: state.week });
+    if (res.error) { showToast('⚠️ ' + res.error); return; }
+    showToast(`✅ Aggiunti ${res.filled} piatti`);
+    await loadSchedule(); renderCalendar(); updateBottom();
+  });
+
   document.getElementById('btn-copy-week').addEventListener('click', async () => {
     const fromWeek = addWeeks(state.week, -1);
     if (!confirm(`Copiare il piano del ${formatWeekLabel(fromWeek)} in questa settimana?\nIl piano attuale verrà sovrascritto.`)) return;
