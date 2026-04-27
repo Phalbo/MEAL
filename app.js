@@ -128,29 +128,42 @@ let _schedSeq = 0; // sequenza per evitare race condition su navigazione rapida
 
 async function loadSchedule() {
   const seq = ++_schedSeq;
-  // Mostra subito griglia vuota — il calendario non sparisce mai
-  state.schedule = {};
-  renderCalendar(); updateBottom();
+  // Fix 1: NON svuotare lo schedule prima del fetch — la griglia resta visibile
   try {
     const rows = await get('schedule_get', { week_start: state.week });
-    if (seq !== _schedSeq) return; // risposta superata da navigazione più recente
-    if (!Array.isArray(rows)) return;
-    rows.forEach(row => {
-      const si = SLOTS.indexOf(row.slot);
-      if (si < 0 || !row.meal_id) return;
-      state.schedule[`${row.day_index}_${si}`] = {
-        id: row.meal_id, name: row.name, emoji: row.emoji,
-        cal_per_adult: row.cal_per_adult, category: row.category,
-        schedule_id: row.id, exception_note: row.exception_note,
-        is_exception: row.is_exception,
-      };
-    });
+    if (seq !== _schedSeq) return;
+    state.schedule = {};
+    if (Array.isArray(rows)) {
+      rows.forEach(row => {
+        const si = SLOTS.indexOf(row.slot);
+        if (si < 0 || !row.meal_id) return;
+        state.schedule[`${row.day_index}_${si}`] = {
+          id: row.meal_id, name: row.name, emoji: row.emoji,
+          cal_per_adult: row.cal_per_adult, category: row.category,
+          schedule_id: row.id, exception_note: row.exception_note,
+          is_exception: row.is_exception,
+        };
+      });
+    }
     renderCalendar(); updateBottom();
   } catch {
     if (seq !== _schedSeq) return;
     state.schedule = {};
     renderCalendar(); updateBottom();
   }
+}
+
+// Fix 2: etichette giorni con data reale (es. "Lun 28 apr")
+function getWeekDayLabels(mondayStr) {
+  const monday = new Date(mondayStr + 'T00:00:00');
+  const names  = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+  return names.map((name, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const day = d.getDate();
+    const mon = d.toLocaleDateString('it-IT', { month: 'short' });
+    return `${name} ${day} ${mon}`;
+  });
 }
 
 function updateWeekLabel() {
