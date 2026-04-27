@@ -69,8 +69,9 @@ function renderCalendar() {
   const grid = document.getElementById('calendar-grid');
   grid.innerHTML = '';
 
+  const dayLabels = getWeekDayLabels(state.week);
   grid.appendChild(el('div', 'cal-header slot-label', ''));
-  DAYS.forEach(d => grid.appendChild(el('div', 'cal-header', d)));
+  dayLabels.forEach(d => grid.appendChild(el('div', 'cal-header', d)));
 
   SLOT_LABELS.forEach((label, si) => {
     grid.appendChild(el('div', 'cal-header slot-label', label));
