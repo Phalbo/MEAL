@@ -143,6 +143,8 @@ function makeCell(dayIndex, slotIndex) {
           id: result.id, name: result.name, emoji: result.emoji,
           cal_per_adult: result.cal_per_adult, category: result.category,
           schedule_id: result.schedule_id, exception_note: null,
+          side_dish: result.side_dish || null,
+          extra_note: result.extra_note || null,
         };
         renderCalendar(); updateBottom();
       } else {

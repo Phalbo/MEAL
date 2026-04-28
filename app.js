@@ -153,6 +153,8 @@ async function loadSchedule() {
           cal_per_adult: row.cal_per_adult, category: row.category,
           schedule_id: row.id, exception_note: row.exception_note,
           is_exception: row.is_exception,
+          side_dish: row.side_dish || null,
+          extra_note: row.extra_note || null,
         };
       });
     }

@@ -32,7 +32,7 @@ function apiExportCsv(PDO $pdo): never {
             $cols = ['name','kcal_100g','zone','aliases','unit_weights'];
             break;
         case 'meals':
-            $rows = $pdo->prepare("SELECT name,emoji,category_id,cal_per_adult,notes,is_system FROM meals WHERE family_id=? OR is_system=1 ORDER BY name");
+            $rows = $pdo->prepare("SELECT name,emoji,category_id,cal_per_adult,notes,is_system FROM meals WHERE family_id=? ORDER BY name");
             $rows->execute([$familyId]);
             $rows = $rows->fetchAll();
             $cols = ['name','emoji','category_id','cal_per_adult','notes','is_system'];

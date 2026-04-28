@@ -197,8 +197,8 @@ function apiScheduleUpdateExtras(PDO $pdo, array $in): never {
     $slot      = $in['slot'] ?? '';
     if (!$weekStart || $dayIndex === null || !$slot) respondError('week_start, day_index, slot obbligatori');
 
-    $sideDish  = $in['side_dish']  !== '' ? ($in['side_dish']  ?? null) : null;
-    $extraNote = $in['extra_note'] !== '' ? ($in['extra_note'] ?? null) : null;
+    $sideDish  = isset($in['side_dish'])  && $in['side_dish']  !== '' ? $in['side_dish']  : null;
+    $extraNote = isset($in['extra_note']) && $in['extra_note'] !== '' ? $in['extra_note'] : null;
 
     // Upsert: se la cella non esiste ancora (nessun pasto) la creiamo vuota
     $pdo->prepare("
@@ -265,7 +265,8 @@ function apiScheduleRandomReplace(PDO $pdo, array $in): never {
     ")->execute([$familyId, $weekStart, $dayIndex, $slot, $newId, $_SESSION['user_id']]);
 
     $row = $pdo->prepare("SELECT m.id, m.name, m.emoji, m.cal_per_adult,
-               mc.name as category, s.id as schedule_id
+               mc.name as category, s.id as schedule_id,
+               s.side_dish, s.extra_note
         FROM meals m
         LEFT JOIN meal_categories mc ON mc.id = m.category_id
         LEFT JOIN schedule s ON s.meal_id = m.id
