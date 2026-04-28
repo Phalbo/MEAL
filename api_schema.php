@@ -152,6 +152,9 @@ function initSchema(PDO $pdo): void {
     try { $pdo->exec("ALTER TABLE shopping_items ADD COLUMN custom_zone TEXT DEFAULT 'altro'"); } catch (Exception $e) {}
     // Migration: pantry_items — articoli manuali
     try { $pdo->exec("ALTER TABLE pantry_items ADD COLUMN is_manual INTEGER DEFAULT 0"); } catch (Exception $e) {}
+    // Migration: schedule — contorno e nota extra per cella
+    try { $pdo->exec("ALTER TABLE schedule ADD COLUMN side_dish TEXT DEFAULT NULL"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE schedule ADD COLUMN extra_note TEXT DEFAULT NULL"); } catch (Exception $e) {}
 
     // Seed categorie
     $pdo->exec("INSERT OR IGNORE INTO meal_categories (id, name, emoji) VALUES

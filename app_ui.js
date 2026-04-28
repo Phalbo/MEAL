@@ -160,6 +160,52 @@ function makeCell(dayIndex, slotIndex) {
     });
     cell.appendChild(excWrap);
 
+    // ── Contorno / nota extra ─────────────────────────────
+    const extrasWrap = document.createElement('div');
+    extrasWrap.className = 'extras-wrap';
+
+    const extrasPreview = document.createElement('div');
+    extrasPreview.className = 'extras-preview';
+    const parts = [];
+    if (meal.side_dish)  parts.push('🥗 ' + meal.side_dish);
+    if (meal.extra_note) parts.push('💬 ' + meal.extra_note);
+    if (parts.length) extrasPreview.textContent = parts.join(' · ');
+    else extrasPreview.innerHTML = '<span class="extras-hint">+ contorno / nota</span>';
+    extrasWrap.appendChild(extrasPreview);
+
+    const extrasForm = document.createElement('div');
+    extrasForm.className = 'extras-form';
+    extrasForm.innerHTML = `
+      <input  class="extras-side"  type="text"  placeholder="Contorno…"  value="${(meal.side_dish  || '').replace(/"/g,'&quot;')}">
+      <input  class="extras-note"  type="text"  placeholder="Nota breve…" value="${(meal.extra_note || '').replace(/"/g,'&quot;')}">
+      <div class="extras-actions">
+        <button class="extras-save">Salva</button>
+        <button class="extras-cancel">✕</button>
+      </div>`;
+    extrasWrap.appendChild(extrasForm);
+
+    extrasPreview.addEventListener('click', e => {
+      e.stopPropagation();
+      extrasForm.classList.toggle('active');
+    });
+    extrasForm.querySelector('.extras-save').addEventListener('click', async e => {
+      e.stopPropagation();
+      const side = extrasForm.querySelector('.extras-side').value.trim();
+      const note = extrasForm.querySelector('.extras-note').value.trim();
+      await post('schedule_update_extras', {
+        week_start: state.week, day_index: dayIndex, slot: SLOTS[slotIndex],
+        side_dish: side, extra_note: note,
+      });
+      state.schedule[key].side_dish  = side  || null;
+      state.schedule[key].extra_note = note  || null;
+      renderCalendar();
+    });
+    extrasForm.querySelector('.extras-cancel').addEventListener('click', e => {
+      e.stopPropagation();
+      extrasForm.classList.remove('active');
+    });
+    cell.appendChild(extrasWrap);
+
   } else {
     cell.appendChild(el('span', 'cell-placeholder', '+'));
   }

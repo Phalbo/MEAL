@@ -61,6 +61,7 @@ function apiScheduleGet(PDO $pdo): never {
     $st = $pdo->prepare("
         SELECT s.id, s.day_index, s.slot, s.meal_id,
                s.is_exception, s.exception_note,
+               s.side_dish, s.extra_note,
                m.name, m.emoji, m.cal_per_adult,
                mc.name as category
         FROM schedule s
@@ -152,6 +153,27 @@ function apiScheduleException(PDO $pdo, array $in): never {
         UPDATE schedule SET is_exception=?, exception_note=?
         WHERE id=? AND family_id=?
     ")->execute([$isException, $exceptionNote ?: null, $scheduleId, $_SESSION['family_id']]);
+
+    respond(['success' => true]);
+}
+
+function apiScheduleUpdateExtras(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = $in['week_start'] ?? '';
+    $dayIndex  = isset($in['day_index']) ? (int)$in['day_index'] : null;
+    $slot      = $in['slot'] ?? '';
+    if (!$weekStart || $dayIndex === null || !$slot) respondError('week_start, day_index, slot obbligatori');
+
+    $sideDish  = $in['side_dish']  !== '' ? ($in['side_dish']  ?? null) : null;
+    $extraNote = $in['extra_note'] !== '' ? ($in['extra_note'] ?? null) : null;
+
+    // Upsert: se la cella non esiste ancora (nessun pasto) la creiamo vuota
+    $pdo->prepare("
+        INSERT INTO schedule (family_id, week_start, day_index, slot, side_dish, extra_note, created_by)
+        VALUES (?,?,?,?,?,?,?)
+        ON CONFLICT(family_id, week_start, day_index, slot)
+        DO UPDATE SET side_dish=excluded.side_dish, extra_note=excluded.extra_note
+    ")->execute([$familyId, $weekStart, $dayIndex, $slot, $sideDish, $extraNote, $_SESSION['user_id']]);
 
     respond(['success' => true]);
 }

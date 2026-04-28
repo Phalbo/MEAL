@@ -409,6 +409,33 @@ body {
 .exc-save   { background: var(--primary); color: #fff; border-color: var(--primary); }
 .exc-cancel { background: none; color: var(--text-secondary); border-color: var(--border-soft); }
 
+/* ── EXTRAS (contorno / nota) ────────────────────── */
+.extras-wrap { border-top: 1px solid var(--border-soft); width: 100%; }
+.extras-preview {
+  font-size: .7rem; color: var(--text-secondary); padding: .2rem .4rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer;
+}
+.extras-preview:hover { color: var(--primary); }
+.extras-hint { color: var(--border-soft); font-style: italic; }
+.extras-form { display: none; padding: .35rem; }
+.extras-form.active { display: flex; flex-direction: column; gap: .25rem; }
+.extras-side, .extras-note {
+  width: 100%; font-size: .75rem; font-family: inherit;
+  border: 1.5px solid var(--border-soft); border-radius: var(--radius-btn);
+  padding: .22rem .4rem; background: var(--bg); color: var(--text-primary);
+}
+.extras-side:focus, .extras-note:focus {
+  outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,107,74,.15);
+}
+.extras-actions { display: flex; gap: .3rem; }
+.extras-save, .extras-cancel {
+  font-size: .72rem; padding: .18rem .5rem;
+  border-radius: var(--radius-btn); border: 1.5px solid; cursor: pointer; font-family: inherit;
+}
+.extras-save   { background: var(--primary); color: #fff; border-color: var(--primary); }
+.extras-cancel { background: none; color: var(--text-secondary); border-color: var(--border-soft); }
+
 /* ── BOTTOM ROW ──────────────────────────────────── */
 .bottom-row {
   display: grid;
