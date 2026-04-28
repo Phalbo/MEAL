@@ -187,8 +187,104 @@ document.getElementById('btn-clear-all').addEventListener('click', async () => {
   render();
 });
 
+// ── Cerca ricetta + preview ingredienti ─────────────────────────────────────
+let allMeals = [];
+
+async function loadMeals() {
+  const d = await apiFetch('meals_list');
+  allMeals = Array.isArray(d) ? d : [];
+}
+
+function showRecipeSuggestions(query) {
+  const box = document.getElementById('recipe-suggestions');
+  const q   = query.trim().toLowerCase();
+  if (!q) { box.style.display = 'none'; return; }
+
+  const matches = allMeals.filter(m => m.name.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) { box.style.display = 'none'; return; }
+
+  box.innerHTML = '';
+  matches.forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'recipe-suggestion-item';
+    item.textContent = `${m.emoji || '🍽️'} ${m.name}`;
+    item.addEventListener('mousedown', e => {
+      e.preventDefault();
+      box.style.display = 'none';
+      document.getElementById('recipe-search').value = '';
+      openRecipeModal(m.id, m.name, m.emoji);
+    });
+    box.appendChild(item);
+  });
+  box.style.display = 'block';
+}
+
+async function openRecipeModal(mealId, mealName, mealEmoji) {
+  const modal = document.getElementById('recipe-modal');
+  const body  = document.getElementById('recipe-modal-body');
+  const title = document.getElementById('recipe-modal-title');
+
+  title.textContent = `${mealEmoji || '🍽️'} ${mealName}`;
+  body.innerHTML = '<p style="padding:.75rem;color:var(--text-secondary)">Caricamento…</p>';
+  modal.style.display = 'flex';
+
+  const d = await apiFetch('meal_ingredients_preview', { meal_id: mealId });
+  if (d.error) { body.innerHTML = `<p style="color:red;padding:.75rem">${d.error}</p>`; return; }
+
+  const ings = d.ingredients || [];
+  if (!ings.length) {
+    body.innerHTML = '<p style="padding:.75rem;color:var(--text-secondary)">Nessun ingrediente registrato.</p>';
+    return;
+  }
+
+  body.innerHTML = '';
+  ings.forEach((ing, i) => {
+    const label = document.createElement('label');
+    label.className = 'recipe-ing-row';
+    label.innerHTML = `
+      <input type="checkbox" class="recipe-ing-check" data-idx="${i}" checked>
+      <span class="recipe-ing-name">${ing.name}</span>
+      ${ing.quantity ? `<span class="recipe-ing-qty">${ing.quantity}${ing.unit ? ' ' + ing.unit : ''}</span>` : ''}
+      <span class="recipe-ing-zone">${ZONE_EMOJI[ing.zone] || '📦'}</span>`;
+    label._ing = ing;
+    body.appendChild(label);
+  });
+
+  document.getElementById('recipe-modal-add').onclick = async () => {
+    const checked = [...body.querySelectorAll('.recipe-ing-check:checked')].map(cb => cb.closest('label')._ing);
+    if (!checked.length) return;
+    document.getElementById('recipe-modal-add').disabled = true;
+    document.getElementById('recipe-modal-add').textContent = '⏳';
+    for (const ing of checked) {
+      const d = await apiPost('shopping_add_manual', {
+        name: ing.name, quantity: ing.quantity || null,
+        unit: ing.unit || null, zone: ing.zone || 'scaffali', week_start: WEEK,
+      });
+      if (!d.error) items.push(d);
+    }
+    modal.style.display = 'none';
+    render();
+    document.getElementById('recipe-modal-add').disabled = false;
+    document.getElementById('recipe-modal-add').textContent = '➕ Aggiungi selezionati';
+  };
+}
+
+document.getElementById('recipe-search').addEventListener('input', e => {
+  showRecipeSuggestions(e.target.value);
+});
+document.getElementById('recipe-search').addEventListener('blur', () => {
+  setTimeout(() => { document.getElementById('recipe-suggestions').style.display = 'none'; }, 150);
+});
+document.getElementById('recipe-modal-close').addEventListener('click',  () => { document.getElementById('recipe-modal').style.display = 'none'; });
+document.getElementById('recipe-modal-cancel').addEventListener('click', () => { document.getElementById('recipe-modal').style.display = 'none'; });
+document.getElementById('recipe-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('recipe-modal'))
+    document.getElementById('recipe-modal').style.display = 'none';
+});
+
 // ── Avvio ────────────────────────────────────────────────────────────────────
 loadFull().then(() => {
   ticker = setInterval(updateLastUpdateLabel, 1000);
 });
+loadMeals();
 window.addEventListener('beforeunload', () => clearInterval(ticker));
