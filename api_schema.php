@@ -156,12 +156,12 @@ function initSchema(PDO $pdo): void {
     try { $pdo->exec("ALTER TABLE schedule ADD COLUMN side_dish TEXT DEFAULT NULL"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE schedule ADD COLUMN extra_note TEXT DEFAULT NULL"); } catch (Exception $e) {}
 
-    // Indici per query frequenti
-    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_schedule_family_week ON schedule (family_id, week_start)");
-    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_shopping_family_week ON shopping_items (family_id, week_start)");
-    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_meals_family        ON meals (family_id, is_system)");
-    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_pantry_family       ON pantry_items (family_id)");
-    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_ingredients_meal    ON meal_ingredients (meal_id)");
+    // Indici per query frequenti (in try/catch: sicuri su ogni versione DB)
+    try { $pdo->exec("CREATE INDEX IF NOT EXISTS idx_schedule_family_week ON schedule (family_id, week_start)"); } catch (Exception $e) {}
+    try { $pdo->exec("CREATE INDEX IF NOT EXISTS idx_shopping_family_week ON shopping_items (family_id, week_start)"); } catch (Exception $e) {}
+    try { $pdo->exec("CREATE INDEX IF NOT EXISTS idx_meals_family        ON meals (family_id, is_system)"); } catch (Exception $e) {}
+    try { $pdo->exec("CREATE INDEX IF NOT EXISTS idx_pantry_family       ON pantry_items (family_id)"); } catch (Exception $e) {}
+    try { $pdo->exec("CREATE INDEX IF NOT EXISTS idx_ingredients_meal    ON meal_ingredients (meal_id)"); } catch (Exception $e) {}
 
     // Seed categorie
     $pdo->exec("INSERT OR IGNORE INTO meal_categories (id, name, emoji) VALUES
@@ -240,7 +240,7 @@ function initSchema(PDO $pdo): void {
         ('acqua ossigenata',0,'casalinghi')
     ");
 
-    seedSystemMeals($pdo);
+    try { seedSystemMeals($pdo); } catch (Exception $e) {}
 }
 
 function detectZoneStatic(string $name): string {
@@ -274,6 +274,9 @@ function detectZoneStatic(string $name): string {
 function seedSystemMeals(PDO $pdo): void {
     $existing = (int)$pdo->query("SELECT COUNT(*) FROM meals WHERE is_system=1")->fetchColumn();
     if ($existing > 0) return;
+
+    // FK off durante il seed: family_id=0 non esiste in families
+    $pdo->exec('PRAGMA foreign_keys = OFF');
 
     $insMeal = $pdo->prepare("
         INSERT OR IGNORE INTO meals (family_id,name,emoji,category_id,cal_per_adult,notes,is_system,created_by)
@@ -414,4 +417,6 @@ function seedSystemMeals(PDO $pdo): void {
             $insIng->execute([$mealId, $iname, $iqty, $iunit ?: null, $zone]);
         }
     }
+
+    $pdo->exec('PRAGMA foreign_keys = ON');
 }
