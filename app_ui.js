@@ -120,8 +120,9 @@ function makeCell(dayIndex, slotIndex) {
       <span class="cell-name">${meal.name}</span>
       <span class="cell-cal">${meal.cal_per_adult} kcal</span>
       ${conflict ? `<span class="cell-alert" title="Contiene allergeni per un profilo">🚨</span>` : ''}
-      <button class="cell-exc-btn" title="Nota eccezione">📝</button>
-      <button class="cell-remove" title="Rimuovi">×</button>`;
+      <button class="cell-dice-btn" title="Sostituisci a caso">🎲</button>
+      <button class="cell-exc-btn"  title="Nota eccezione">📝</button>
+      <button class="cell-remove"   title="Rimuovi">×</button>`;
 
     inner.addEventListener('dragstart', e => {
       e.dataTransfer.setData('mealId',  String(meal.id));
@@ -129,6 +130,25 @@ function makeCell(dayIndex, slotIndex) {
       e.stopPropagation();
     });
     addTouchDrag(inner, meal, key);
+
+    inner.querySelector('.cell-dice-btn').addEventListener('click', async e => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = '⏳';
+      const result = await post('schedule_random_replace', {
+        week_start: state.week, day_index: dayIndex, slot: SLOTS[slotIndex],
+      });
+      if (result && !result.error) {
+        state.schedule[key] = {
+          id: result.id, name: result.name, emoji: result.emoji,
+          cal_per_adult: result.cal_per_adult, category: result.category,
+          schedule_id: result.schedule_id, exception_note: null,
+        };
+        renderCalendar(); updateBottom();
+      } else {
+        btn.disabled = false; btn.textContent = '🎲';
+      }
+    });
 
     inner.querySelector('.cell-remove').addEventListener('click', async e => {
       e.stopPropagation();

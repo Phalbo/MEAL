@@ -389,6 +389,18 @@ body {
 }
 .cell-exc-btn:hover { opacity: 1; }
 
+.cell-dice-btn {
+  font-size: .78rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 .1rem;
+  opacity: .4;
+  line-height: 1;
+}
+.cell-dice-btn:hover   { opacity: 1; }
+.cell-dice-btn:disabled { opacity: .25; cursor: default; }
+
 .exc-wrap { border-top: 1px solid var(--border-soft); width: 100%; }
 .exc-note {
   font-size: .7rem;

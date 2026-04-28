@@ -147,6 +147,7 @@ match ($action) {
     'schedule_copy'        => apiScheduleCopy($pdo, $input),
     'schedule_autofill'       => apiScheduleAutofill($pdo, $input),
     'schedule_update_extras'  => apiScheduleUpdateExtras($pdo, $input),
+    'schedule_random_replace' => apiScheduleRandomReplace($pdo, $input),
     'shopping_generate'    => apiShoppingGenerate($pdo, $input),
     'shopping_list'        => apiShoppingList($pdo),
     'shopping_check'       => apiShoppingCheck($pdo, $input),
