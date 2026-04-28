@@ -269,24 +269,46 @@ function updateBottom() { updateCalories(); }
 function updateCalories() {
   const container   = document.getElementById('calories-bars');
   container.innerHTML = '';
-  const portions    = getTotalPortions();       // Σ portion_weight famiglia
-  const maxCal      = MAX_CAL * Math.max(1, portions); // soglie scalate
+  const portions    = getTotalPortions();
+  const maxCal      = MAX_CAL * Math.max(1, portions);
   const hasProfiles = state.profiles.length > 0;
+
+  // Banner se non ci sono profili
+  const noProfileBanner = document.getElementById('no-profile-banner');
+  if (noProfileBanner) noProfileBanner.style.display = hasProfiles ? 'none' : 'block';
 
   DAYS.forEach((dayShort, di) => {
     let baseKcal = 0;
     SLOTS.forEach((_, si) => { const m = state.schedule[`${di}_${si}`]; if (m) baseKcal += m.cal_per_adult || 0; });
-    const total  = Math.round(baseKcal * portions);    // kcal famiglia
-    const pct    = Math.min(100, Math.round((total / maxCal) * 100));
-    const color  = total === 0 ? '#E0D8CC' : total < (1500 * portions) ? '#4A8060'
-                 : total < (2200 * portions) ? '#E8A020' : '#C84B2D';
-    const label  = total ? `${total} kcal${hasProfiles ? ` (×${portions.toFixed(1)})` : ''}` : '—';
-    const row    = document.createElement('div');
+    const total = Math.round(baseKcal * portions);
+    const pct   = Math.min(100, Math.round((total / maxCal) * 100));
+    const color = total === 0 ? '#E0D8CC' : total < (1500 * portions) ? '#4A8060'
+                : total < (2200 * portions) ? '#E8A020' : '#C84B2D';
+    const label = total ? `${total} kcal` : '—';
+
+    const row = document.createElement('div');
     row.className = 'cal-bar-row';
+
+    // riga principale con barra
     row.innerHTML = `
       <span class="cal-bar-label">${dayShort}</span>
       <div class="cal-bar-track"><div class="cal-bar-fill" style="width:${pct}%;background:${color}"></div></div>
       <span class="cal-bar-value">${label}</span>`;
+
+    // righe per-profilo sotto la barra
+    if (hasProfiles && baseKcal > 0) {
+      const profileRows = document.createElement('div');
+      profileRows.className = 'cal-profile-rows';
+      state.profiles.forEach(p => {
+        const profKcal = Math.round(baseKcal * parseFloat(p.portion_weight || 1));
+        const span = document.createElement('span');
+        span.className = 'cal-profile-chip';
+        span.textContent = `${p.avatar_emoji || '👤'} ${p.name}: ${profKcal} kcal`;
+        profileRows.appendChild(span);
+      });
+      row.appendChild(profileRows);
+    }
+
     container.appendChild(row);
   });
 }

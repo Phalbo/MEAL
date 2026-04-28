@@ -1,4 +1,32 @@
 <?php
+
+// Ritorna set di meal_id da escludere per intolleranze familiari
+function getConflictingMealIds(PDO $pdo, int $familyId): array {
+    // tutte le etichette intolleranza della famiglia
+    $st = $pdo->prepare("
+        SELECT DISTINCT LOWER(i.label) as label
+        FROM intolerances i
+        JOIN family_profiles fp ON fp.id = i.profile_id
+        WHERE fp.family_id = ?
+    ");
+    $st->execute([$familyId]);
+    $labels = array_column($st->fetchAll(), 'label');
+    if (!$labels) return [];
+
+    // ingredienti con flag non vuoti
+    $rows = $pdo->query("SELECT meal_id, intolerance_flags FROM meal_ingredients
+        WHERE intolerance_flags IS NOT NULL AND intolerance_flags != ''")->fetchAll();
+
+    $conflicting = [];
+    foreach ($rows as $row) {
+        $flags = array_map('trim', array_map('mb_strtolower', explode(',', $row['intolerance_flags'])));
+        if (array_intersect($flags, $labels)) {
+            $conflicting[$row['meal_id']] = true;
+        }
+    }
+    return array_keys($conflicting);
+}
+
 function apiScheduleAutofill(PDO $pdo, array $in): never {
     $familyId  = $_SESSION['family_id'];
     $weekStart = $in['week_start'] ?? '';
@@ -10,13 +38,18 @@ function apiScheduleAutofill(PDO $pdo, array $in): never {
         'cena'      => ['Secondo', 'Altro'],   // no Primo a cena
     ];
 
-    // piatti disponibili (famiglia + sistema)
+    $conflicting = getConflictingMealIds($pdo, $familyId);
+
+    // piatti disponibili (famiglia + sistema), esclusi quelli con conflitti
     $ms = $pdo->prepare("SELECT m.id, m.name, m.emoji, mc.name as category
         FROM meals m LEFT JOIN meal_categories mc ON mc.id = m.category_id
         WHERE (m.family_id = ? OR m.is_system = 1)");
     $ms->execute([$familyId]);
     $byCategory = [];
-    foreach ($ms->fetchAll() as $m) $byCategory[$m['category']][] = $m;
+    foreach ($ms->fetchAll() as $m) {
+        if (in_array($m['id'], $conflicting)) continue;
+        $byCategory[$m['category']][] = $m;
+    }
 
     // slot già occupati
     $ex = $pdo->prepare("SELECT day_index, slot FROM schedule
@@ -204,13 +237,18 @@ function apiScheduleRandomReplace(PDO $pdo, array $in): never {
     $usedSt->execute([$familyId, $weekStart]);
     $usedIds = array_column($usedSt->fetchAll(), 'meal_id');
 
+    $conflicting = getConflictingMealIds($pdo, $familyId);
+
     $ph   = implode(',', array_fill(0, count($allowedCats), '?'));
     $args = array_merge([$familyId], $allowedCats);
     $ms   = $pdo->prepare("SELECT m.id FROM meals m
         LEFT JOIN meal_categories mc ON mc.id = m.category_id
         WHERE (m.family_id=? OR m.is_system=1) AND mc.name IN ($ph)");
     $ms->execute($args);
-    $candidates = array_column($ms->fetchAll(), 'id');
+    $candidates = array_values(array_diff(
+        array_column($ms->fetchAll(), 'id'),
+        $conflicting
+    ));
 
     // preferisce piatti nuovi, poi esclude solo il corrente
     $fresh = array_values(array_diff($candidates, $usedIds));

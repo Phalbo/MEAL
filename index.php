@@ -93,6 +93,9 @@ $csrf = $_SESSION['csrf_token'];
 
       <section class="calories-section">
         <h2>Calorie per giorno</h2>
+        <div id="no-profile-banner" class="no-profile-banner" style="display:none">
+          👥 Nessun profilo impostato — <a href="family.php">aggiungi i membri</a> per vedere le kcal per persona.
+        </div>
         <div id="calories-bars" class="calories-bars"></div>
       </section>
 

@@ -482,7 +482,7 @@ body {
   margin-bottom: .85rem;
 }
 .calories-bars { display: flex; flex-direction: column; gap: .55rem; }
-.cal-bar-row { display: flex; align-items: center; gap: .6rem; }
+.cal-bar-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .cal-bar-label { width: 28px; font-size: .7rem; color: var(--text-secondary); font-weight: 500; flex-shrink: 0; }
 .cal-bar-track {
   flex: 1; height: 10px;
@@ -492,6 +492,32 @@ body {
 }
 .cal-bar-fill { height: 100%; border-radius: var(--radius-pill); transition: width .4s ease; }
 .cal-bar-value { font-size: .7rem; color: var(--text-secondary); width: 70px; text-align: right; flex-shrink: 0; }
+.cal-profile-rows {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+  padding-left: 34px;
+  margin-top: .1rem;
+}
+.cal-profile-chip {
+  font-size: .65rem;
+  background: var(--primary-soft);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  padding: .1rem .45rem;
+  white-space: nowrap;
+}
+.no-profile-banner {
+  font-size: .8rem;
+  color: #5a4a00;
+  background: #fff8e1;
+  border: 1px solid #f5c542;
+  border-radius: var(--radius-btn);
+  padding: .4rem .75rem;
+  margin-bottom: .6rem;
+}
+.no-profile-banner a { color: var(--primary); font-weight: 600; }
 
 /* ── BUTTONS ─────────────────────────────────────── */
 .btn-primary {
