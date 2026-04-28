@@ -9,6 +9,7 @@ require_once __DIR__ . '/api_meals.php';
 require_once __DIR__ . '/api_schedule.php';
 require_once __DIR__ . '/api_shopping.php';
 require_once __DIR__ . '/api_pantry.php';
+require_once __DIR__ . '/api_export_import.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -47,6 +48,7 @@ function getDB(): PDO {
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     $pdo->exec('PRAGMA foreign_keys = ON');
     $pdo->exec('PRAGMA journal_mode = WAL');
+    $pdo->exec('PRAGMA cache_size = -8000');
     initSchema($pdo);
     return $pdo;
 }
@@ -79,12 +81,26 @@ function detectZone(string $name): string {
 $action = $_GET['action'] ?? '';
 $input  = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $raw   = file_get_contents('php://input');
-    $input = json_decode($raw, true) ?? [];
-    if (!$action) $action = $input['action'] ?? '';
+    // multipart/form-data (file upload) — read from $_POST, not php://input
+    $ct = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (str_contains($ct, 'multipart/form-data')) {
+        $input = $_POST;
+        if (!$action) $action = $input['action'] ?? '';
+    } else {
+        $raw   = file_get_contents('php://input');
+        $input = json_decode($raw, true) ?? [];
+        if (!$action) $action = $input['action'] ?? '';
+    }
 }
 
 $pdo = getDB();
+
+// export_csv streams CSV — must be handled before the JSON Content-Type header takes effect
+if ($action === 'export_csv') {
+    requireAuth();
+    requireFamily();
+    apiExportCsv($pdo);
+}
 
 // Public (no auth, no CSRF)
 $public = ['login', 'register', 'shopping_list_pub', 'shopping_check_pub',
@@ -146,5 +162,6 @@ match ($action) {
     'pantry_consume'        => apiPantryConsume($pdo, $input),
     'pantry_add_manual'     => apiPantryAddManual($pdo, $input),
     'pantry_clear'          => apiPantryClear($pdo),
+    'import_csv'            => apiImportCsv($pdo),
     default                => respondError('Azione non riconosciuta', 404),
 };
