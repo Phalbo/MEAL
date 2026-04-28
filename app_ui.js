@@ -65,7 +65,23 @@ function addRandomToFirst(meal) {
 }
 
 // ── Calendar ─────────────────────────────────────────────────────────────────
+let _repCounts  = {};   // meal_id → count, updated before each render
+
 function renderCalendar() {
+  const { counts, primoCount } = checkRepetitions();
+  _repCounts = counts;
+
+  // Banner avviso primi piatti
+  const warn = document.getElementById('rep-warning');
+  if (warn) {
+    if (primoCount > 5) {
+      warn.textContent = `⚠️ Hai ${primoCount} primi piatti questa settimana — considera di variare.`;
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+
   const grid = document.getElementById('calendar-grid');
   grid.innerHTML = '';
 
@@ -88,6 +104,9 @@ function makeCell(dayIndex, slotIndex) {
   cell.dataset.key = key;
 
   if (meal) {
+    const repCount = _repCounts[meal.id] || 0;
+    if      (repCount >= 3) cell.classList.add('cell-repeat-3');
+    else if (repCount >= 2) cell.classList.add('cell-repeat-2');
     const inner      = document.createElement('div');
     inner.className  = 'cell-meal';
     inner.draggable  = true;

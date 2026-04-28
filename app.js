@@ -123,6 +123,17 @@ function mealHasConflict(meal) {
   return flags.some(f => familyIntol.includes(f));
 }
 
+function checkRepetitions() {
+  const counts = {};   // meal_id → occorrenze nella settimana
+  let primoCount = 0;
+  Object.values(state.schedule).forEach(meal => {
+    if (!meal) return;
+    counts[meal.id] = (counts[meal.id] || 0) + 1;
+    if (meal.category === 'Primo') primoCount++;
+  });
+  return { counts, primoCount };
+}
+
 // ── Schedule ─────────────────────────────────────────────────────────────────
 let _schedSeq = 0; // sequenza per evitare race condition su navigazione rapida
 

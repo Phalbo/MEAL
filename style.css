@@ -324,6 +324,19 @@ body {
   box-shadow: var(--shadow-card);
 }
 .cal-cell.cell-has-conflict { border-color: var(--orange-soft); border-style: solid; }
+.cal-cell.cell-repeat-2 { border: 2px solid #f5c542; }
+.cal-cell.cell-repeat-3 { border: 2px solid #e53935; }
+
+.rep-warning {
+  background: #fff8e1;
+  color: #7a5c00;
+  border: 1.5px solid #f5c542;
+  border-radius: var(--radius-btn);
+  padding: .45rem .85rem;
+  font-size: .83rem;
+  font-weight: 600;
+  margin-bottom: .6rem;
+}
 
 .cell-placeholder {
   font-size: 1.3rem;

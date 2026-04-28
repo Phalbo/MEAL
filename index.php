@@ -83,6 +83,7 @@ $csrf = $_SESSION['csrf_token'];
           <button id="btn-gen-shopping" class="btn-ghost">🛒 Genera lista</button>
         </div>
       </div>
+      <div id="rep-warning" class="rep-warning" style="display:none"></div>
       <div class="calendar-wrapper">
         <div id="calendar-grid" class="calendar-grid"></div>
       </div>
