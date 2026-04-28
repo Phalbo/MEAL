@@ -100,5 +100,15 @@ $csrf = $_SESSION['csrf_token'];
 
 <div id="toast" class="toast"></div>
 <script src="admin.js"></script>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="index.php"  class="bottom-nav-item"><span class="bn-icon">📅</span>Pianifica</a>
+    <a href="admin.php"  class="bottom-nav-item active"><span class="bn-icon">🍝</span>Ricette</a>
+    <button class="bottom-nav-fab" style="visibility:hidden;pointer-events:none"></button>
+    <a href="lista.php"  class="bottom-nav-item"><span class="bn-icon">🛒</span>Spesa</a>
+    <a href="family.php" class="bottom-nav-item"><span class="bn-icon">👥</span>Famiglia</a>
+  </div>
+</nav>
 </body>
 </html>
