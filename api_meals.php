@@ -116,6 +116,21 @@ function apiMealsDelete(PDO $pdo, array $in): never {
     respond(['success' => true]);
 }
 
+function apiMealIngredientsPreview(PDO $pdo): never {
+    $familyId = $_SESSION['family_id'];
+    $mealId   = (int)($_GET['meal_id'] ?? 0);
+    if (!$mealId) respondError('meal_id obbligatorio');
+
+    $meal = $pdo->prepare("SELECT id,name,emoji FROM meals WHERE id=? AND (family_id=? OR is_system=1)");
+    $meal->execute([$mealId, $familyId]);
+    $meal = $meal->fetch();
+    if (!$meal) respondError('Ricetta non trovata', 404);
+
+    $ings = $pdo->prepare("SELECT name,quantity,unit,zone FROM meal_ingredients WHERE meal_id=? ORDER BY name");
+    $ings->execute([$mealId]);
+    respond(['meal' => $meal, 'ingredients' => $ings->fetchAll()]);
+}
+
 // ── Helper: salva array ingredienti ──────────────────────────────────────────
 function saveIngredients(PDO $pdo, int $mealId, array $ingredients): void {
     $st = $pdo->prepare("INSERT INTO meal_ingredients (meal_id,name,quantity,unit,price_est,intolerance_flags,zone) VALUES (?,?,?,?,?,?,?)");

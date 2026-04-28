@@ -1,4 +1,32 @@
 <?php
+
+// Ritorna set di meal_id da escludere per intolleranze familiari
+function getConflictingMealIds(PDO $pdo, int $familyId): array {
+    // tutte le etichette intolleranza della famiglia
+    $st = $pdo->prepare("
+        SELECT DISTINCT LOWER(i.label) as label
+        FROM intolerances i
+        JOIN family_profiles fp ON fp.id = i.profile_id
+        WHERE fp.family_id = ?
+    ");
+    $st->execute([$familyId]);
+    $labels = array_column($st->fetchAll(), 'label');
+    if (!$labels) return [];
+
+    // ingredienti con flag non vuoti
+    $rows = $pdo->query("SELECT meal_id, intolerance_flags FROM meal_ingredients
+        WHERE intolerance_flags IS NOT NULL AND intolerance_flags != ''")->fetchAll();
+
+    $conflicting = [];
+    foreach ($rows as $row) {
+        $flags = array_map('trim', array_map('mb_strtolower', explode(',', $row['intolerance_flags'])));
+        if (array_intersect($flags, $labels)) {
+            $conflicting[$row['meal_id']] = true;
+        }
+    }
+    return array_keys($conflicting);
+}
+
 function apiScheduleAutofill(PDO $pdo, array $in): never {
     $familyId  = $_SESSION['family_id'];
     $weekStart = $in['week_start'] ?? '';
@@ -7,16 +35,21 @@ function apiScheduleAutofill(PDO $pdo, array $in): never {
     $slotRules = [
         'colazione' => ['Colazione'],
         'pranzo'    => ['Primo', 'Secondo', 'Altro'],
-        'cena'      => ['Primo', 'Secondo', 'Altro'],
+        'cena'      => ['Secondo', 'Altro'],   // no Primo a cena
     ];
 
-    // piatti disponibili (famiglia + sistema)
+    $conflicting = getConflictingMealIds($pdo, $familyId);
+
+    // piatti disponibili (famiglia + sistema), esclusi quelli con conflitti
     $ms = $pdo->prepare("SELECT m.id, m.name, m.emoji, mc.name as category
         FROM meals m LEFT JOIN meal_categories mc ON mc.id = m.category_id
         WHERE (m.family_id = ? OR m.is_system = 1)");
     $ms->execute([$familyId]);
     $byCategory = [];
-    foreach ($ms->fetchAll() as $m) $byCategory[$m['category']][] = $m;
+    foreach ($ms->fetchAll() as $m) {
+        if (in_array($m['id'], $conflicting)) continue;
+        $byCategory[$m['category']][] = $m;
+    }
 
     // slot già occupati
     $ex = $pdo->prepare("SELECT day_index, slot FROM schedule
@@ -61,6 +94,7 @@ function apiScheduleGet(PDO $pdo): never {
     $st = $pdo->prepare("
         SELECT s.id, s.day_index, s.slot, s.meal_id,
                s.is_exception, s.exception_note,
+               s.side_dish, s.extra_note,
                m.name, m.emoji, m.cal_per_adult,
                mc.name as category
         FROM schedule s
@@ -154,4 +188,90 @@ function apiScheduleException(PDO $pdo, array $in): never {
     ")->execute([$isException, $exceptionNote ?: null, $scheduleId, $_SESSION['family_id']]);
 
     respond(['success' => true]);
+}
+
+function apiScheduleUpdateExtras(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = $in['week_start'] ?? '';
+    $dayIndex  = isset($in['day_index']) ? (int)$in['day_index'] : null;
+    $slot      = $in['slot'] ?? '';
+    if (!$weekStart || $dayIndex === null || !$slot) respondError('week_start, day_index, slot obbligatori');
+
+    $sideDish  = isset($in['side_dish'])  && $in['side_dish']  !== '' ? $in['side_dish']  : null;
+    $extraNote = isset($in['extra_note']) && $in['extra_note'] !== '' ? $in['extra_note'] : null;
+
+    // Upsert: se la cella non esiste ancora (nessun pasto) la creiamo vuota
+    $pdo->prepare("
+        INSERT INTO schedule (family_id, week_start, day_index, slot, side_dish, extra_note, created_by)
+        VALUES (?,?,?,?,?,?,?)
+        ON CONFLICT(family_id, week_start, day_index, slot)
+        DO UPDATE SET side_dish=excluded.side_dish, extra_note=excluded.extra_note
+    ")->execute([$familyId, $weekStart, $dayIndex, $slot, $sideDish, $extraNote, $_SESSION['user_id']]);
+
+    respond(['success' => true]);
+}
+
+function apiScheduleRandomReplace(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = $in['week_start'] ?? '';
+    $dayIndex  = isset($in['day_index']) ? (int)$in['day_index'] : null;
+    $slot      = $in['slot'] ?? '';
+    if (!$weekStart || $dayIndex === null || !$slot) respondError('week_start, day_index, slot obbligatori');
+
+    $allowedCats = match($slot) {
+        'colazione' => ['Colazione'],
+        'pranzo'    => ['Primo', 'Secondo', 'Altro'],
+        'cena'      => ['Secondo', 'Altro'],
+        default     => ['Secondo', 'Altro'],
+    };
+
+    // piatto corrente
+    $curr = $pdo->prepare("SELECT meal_id FROM schedule
+        WHERE family_id=? AND week_start=? AND day_index=? AND slot=?");
+    $curr->execute([$familyId, $weekStart, $dayIndex, $slot]);
+    $currentMealId = (int)($curr->fetchColumn() ?: 0);
+
+    // piatti già in uso questa settimana
+    $usedSt = $pdo->prepare("SELECT DISTINCT meal_id FROM schedule
+        WHERE family_id=? AND week_start=? AND meal_id IS NOT NULL");
+    $usedSt->execute([$familyId, $weekStart]);
+    $usedIds = array_column($usedSt->fetchAll(), 'meal_id');
+
+    $conflicting = getConflictingMealIds($pdo, $familyId);
+
+    $ph   = implode(',', array_fill(0, count($allowedCats), '?'));
+    $args = array_merge([$familyId], $allowedCats);
+    $ms   = $pdo->prepare("SELECT m.id FROM meals m
+        LEFT JOIN meal_categories mc ON mc.id = m.category_id
+        WHERE (m.family_id=? OR m.is_system=1) AND mc.name IN ($ph)");
+    $ms->execute($args);
+    $candidates = array_values(array_diff(
+        array_column($ms->fetchAll(), 'id'),
+        $conflicting
+    ));
+
+    // preferisce piatti nuovi, poi esclude solo il corrente
+    $fresh = array_values(array_diff($candidates, $usedIds));
+    $pool  = $fresh ?: array_values(array_diff($candidates, [$currentMealId]));
+    if (!$pool) $pool = $candidates;
+    if (!$pool) respondError('Nessun piatto disponibile');
+
+    $newId = $pool[array_rand($pool)];
+
+    $pdo->prepare("INSERT INTO schedule (family_id,week_start,day_index,slot,meal_id,created_by)
+        VALUES (?,?,?,?,?,?)
+        ON CONFLICT(family_id,week_start,day_index,slot)
+        DO UPDATE SET meal_id=excluded.meal_id, created_by=excluded.created_by
+    ")->execute([$familyId, $weekStart, $dayIndex, $slot, $newId, $_SESSION['user_id']]);
+
+    $row = $pdo->prepare("SELECT m.id, m.name, m.emoji, m.cal_per_adult,
+               mc.name as category, s.id as schedule_id,
+               s.side_dish, s.extra_note
+        FROM meals m
+        LEFT JOIN meal_categories mc ON mc.id = m.category_id
+        LEFT JOIN schedule s ON s.meal_id = m.id
+            AND s.family_id=? AND s.week_start=? AND s.day_index=? AND s.slot=?
+        WHERE m.id=?");
+    $row->execute([$familyId, $weekStart, $dayIndex, $slot, $newId]);
+    respond($row->fetch());
 }

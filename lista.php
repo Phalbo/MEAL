@@ -41,6 +41,15 @@ $weekStart = $_GET['week'] ?? date('Y-m-d', strtotime('monday this week'));
     <button id="btn-clear-all"        class="lista-btn-ghost" style="color:#c84b2d">🗑 Svuota tutto</button>
   </div>
 
+  <!-- Barra "Aggiungi da ricetta" -->
+  <div class="lista-recipe-bar">
+    <span class="lista-recipe-label">🍽️</span>
+    <div class="lista-recipe-search-wrap">
+      <input type="text" id="recipe-search" class="lista-add-input" placeholder="Cerca ricetta e aggiungi ingredienti…" autocomplete="off">
+      <div id="recipe-suggestions" class="recipe-suggestions"></div>
+    </div>
+  </div>
+
   <!-- Barra aggiunta rapida -->
   <div class="lista-add-bar">
     <input type="text"   id="add-name" class="lista-add-input" placeholder="Aggiungi articolo…">
@@ -65,6 +74,21 @@ $weekStart = $_GET['week'] ?? date('Y-m-d', strtotime('monday this week'));
 <main id="lista-main" class="lista-main">
   <div class="lista-loading">Caricamento lista…</div>
 </main>
+
+<!-- Modale preview ingredienti ricetta -->
+<div id="recipe-modal" class="recipe-modal-overlay" style="display:none">
+  <div class="recipe-modal">
+    <div class="recipe-modal-head">
+      <span id="recipe-modal-title">Ingredienti</span>
+      <button id="recipe-modal-close" class="recipe-modal-close">✕</button>
+    </div>
+    <div id="recipe-modal-body" class="recipe-modal-body"></div>
+    <div class="recipe-modal-foot">
+      <button id="recipe-modal-add" class="lista-btn-primary">➕ Aggiungi selezionati</button>
+      <button id="recipe-modal-cancel" class="lista-btn-ghost">Annulla</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const WEEK = '<?= htmlspecialchars($weekStart) ?>';

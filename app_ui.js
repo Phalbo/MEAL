@@ -65,7 +65,23 @@ function addRandomToFirst(meal) {
 }
 
 // ── Calendar ─────────────────────────────────────────────────────────────────
+let _repCounts  = {};   // meal_id → count, updated before each render
+
 function renderCalendar() {
+  const { counts, primoCount } = checkRepetitions();
+  _repCounts = counts;
+
+  // Banner avviso primi piatti
+  const warn = document.getElementById('rep-warning');
+  if (warn) {
+    if (primoCount > 5) {
+      warn.textContent = `⚠️ Hai ${primoCount} primi piatti questa settimana — considera di variare.`;
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+
   const grid = document.getElementById('calendar-grid');
   grid.innerHTML = '';
 
@@ -88,6 +104,9 @@ function makeCell(dayIndex, slotIndex) {
   cell.dataset.key = key;
 
   if (meal) {
+    const repCount = _repCounts[meal.id] || 0;
+    if      (repCount >= 3) cell.classList.add('cell-repeat-3');
+    else if (repCount >= 2) cell.classList.add('cell-repeat-2');
     const inner      = document.createElement('div');
     inner.className  = 'cell-meal';
     inner.draggable  = true;
@@ -101,8 +120,9 @@ function makeCell(dayIndex, slotIndex) {
       <span class="cell-name">${meal.name}</span>
       <span class="cell-cal">${meal.cal_per_adult} kcal</span>
       ${conflict ? `<span class="cell-alert" title="Contiene allergeni per un profilo">🚨</span>` : ''}
-      <button class="cell-exc-btn" title="Nota eccezione">📝</button>
-      <button class="cell-remove" title="Rimuovi">×</button>`;
+      <button class="cell-dice-btn" title="Sostituisci a caso">🎲</button>
+      <button class="cell-exc-btn"  title="Nota eccezione">📝</button>
+      <button class="cell-remove"   title="Rimuovi">×</button>`;
 
     inner.addEventListener('dragstart', e => {
       e.dataTransfer.setData('mealId',  String(meal.id));
@@ -110,6 +130,27 @@ function makeCell(dayIndex, slotIndex) {
       e.stopPropagation();
     });
     addTouchDrag(inner, meal, key);
+
+    inner.querySelector('.cell-dice-btn').addEventListener('click', async e => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = '⏳';
+      const result = await post('schedule_random_replace', {
+        week_start: state.week, day_index: dayIndex, slot: SLOTS[slotIndex],
+      });
+      if (result && !result.error) {
+        state.schedule[key] = {
+          id: result.id, name: result.name, emoji: result.emoji,
+          cal_per_adult: result.cal_per_adult, category: result.category,
+          schedule_id: result.schedule_id, exception_note: null,
+          side_dish: result.side_dish || null,
+          extra_note: result.extra_note || null,
+        };
+        renderCalendar(); updateBottom();
+      } else {
+        btn.disabled = false; btn.textContent = '🎲';
+      }
+    });
 
     inner.querySelector('.cell-remove').addEventListener('click', async e => {
       e.stopPropagation();
@@ -160,6 +201,52 @@ function makeCell(dayIndex, slotIndex) {
     });
     cell.appendChild(excWrap);
 
+    // ── Contorno / nota extra ─────────────────────────────
+    const extrasWrap = document.createElement('div');
+    extrasWrap.className = 'extras-wrap';
+
+    const extrasPreview = document.createElement('div');
+    extrasPreview.className = 'extras-preview';
+    const parts = [];
+    if (meal.side_dish)  parts.push('🥗 ' + meal.side_dish);
+    if (meal.extra_note) parts.push('💬 ' + meal.extra_note);
+    if (parts.length) extrasPreview.textContent = parts.join(' · ');
+    else extrasPreview.innerHTML = '<span class="extras-hint">+ contorno / nota</span>';
+    extrasWrap.appendChild(extrasPreview);
+
+    const extrasForm = document.createElement('div');
+    extrasForm.className = 'extras-form';
+    extrasForm.innerHTML = `
+      <input  class="extras-side"  type="text"  placeholder="Contorno…"  value="${(meal.side_dish  || '').replace(/"/g,'&quot;')}">
+      <input  class="extras-note"  type="text"  placeholder="Nota breve…" value="${(meal.extra_note || '').replace(/"/g,'&quot;')}">
+      <div class="extras-actions">
+        <button class="extras-save">Salva</button>
+        <button class="extras-cancel">✕</button>
+      </div>`;
+    extrasWrap.appendChild(extrasForm);
+
+    extrasPreview.addEventListener('click', e => {
+      e.stopPropagation();
+      extrasForm.classList.toggle('active');
+    });
+    extrasForm.querySelector('.extras-save').addEventListener('click', async e => {
+      e.stopPropagation();
+      const side = extrasForm.querySelector('.extras-side').value.trim();
+      const note = extrasForm.querySelector('.extras-note').value.trim();
+      await post('schedule_update_extras', {
+        week_start: state.week, day_index: dayIndex, slot: SLOTS[slotIndex],
+        side_dish: side, extra_note: note,
+      });
+      state.schedule[key].side_dish  = side  || null;
+      state.schedule[key].extra_note = note  || null;
+      renderCalendar();
+    });
+    extrasForm.querySelector('.extras-cancel').addEventListener('click', e => {
+      e.stopPropagation();
+      extrasForm.classList.remove('active');
+    });
+    cell.appendChild(extrasWrap);
+
   } else {
     cell.appendChild(el('span', 'cell-placeholder', '+'));
   }
@@ -184,24 +271,46 @@ function updateBottom() { updateCalories(); }
 function updateCalories() {
   const container   = document.getElementById('calories-bars');
   container.innerHTML = '';
-  const portions    = getTotalPortions();       // Σ portion_weight famiglia
-  const maxCal      = MAX_CAL * Math.max(1, portions); // soglie scalate
+  const portions    = getTotalPortions();
+  const maxCal      = MAX_CAL * Math.max(1, portions);
   const hasProfiles = state.profiles.length > 0;
+
+  // Banner se non ci sono profili
+  const noProfileBanner = document.getElementById('no-profile-banner');
+  if (noProfileBanner) noProfileBanner.style.display = hasProfiles ? 'none' : 'block';
 
   DAYS.forEach((dayShort, di) => {
     let baseKcal = 0;
     SLOTS.forEach((_, si) => { const m = state.schedule[`${di}_${si}`]; if (m) baseKcal += m.cal_per_adult || 0; });
-    const total  = Math.round(baseKcal * portions);    // kcal famiglia
-    const pct    = Math.min(100, Math.round((total / maxCal) * 100));
-    const color  = total === 0 ? '#E0D8CC' : total < (1500 * portions) ? '#4A8060'
-                 : total < (2200 * portions) ? '#E8A020' : '#C84B2D';
-    const label  = total ? `${total} kcal${hasProfiles ? ` (×${portions.toFixed(1)})` : ''}` : '—';
-    const row    = document.createElement('div');
+    const total = Math.round(baseKcal * portions);
+    const pct   = Math.min(100, Math.round((total / maxCal) * 100));
+    const color = total === 0 ? '#E0D8CC' : total < (1500 * portions) ? '#4A8060'
+                : total < (2200 * portions) ? '#E8A020' : '#C84B2D';
+    const label = total ? `${total} kcal` : '—';
+
+    const row = document.createElement('div');
     row.className = 'cal-bar-row';
+
+    // riga principale con barra
     row.innerHTML = `
       <span class="cal-bar-label">${dayShort}</span>
       <div class="cal-bar-track"><div class="cal-bar-fill" style="width:${pct}%;background:${color}"></div></div>
       <span class="cal-bar-value">${label}</span>`;
+
+    // righe per-profilo sotto la barra
+    if (hasProfiles && baseKcal > 0) {
+      const profileRows = document.createElement('div');
+      profileRows.className = 'cal-profile-rows';
+      state.profiles.forEach(p => {
+        const profKcal = Math.round(baseKcal * parseFloat(p.portion_weight || 1));
+        const span = document.createElement('span');
+        span.className = 'cal-profile-chip';
+        span.textContent = `${p.avatar_emoji || '👤'} ${p.name}: ${profKcal} kcal`;
+        profileRows.appendChild(span);
+      });
+      row.appendChild(profileRows);
+    }
+
     container.appendChild(row);
   });
 }

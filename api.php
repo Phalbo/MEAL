@@ -9,6 +9,7 @@ require_once __DIR__ . '/api_meals.php';
 require_once __DIR__ . '/api_schedule.php';
 require_once __DIR__ . '/api_shopping.php';
 require_once __DIR__ . '/api_pantry.php';
+require_once __DIR__ . '/api_export_import.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -80,12 +81,26 @@ function detectZone(string $name): string {
 $action = $_GET['action'] ?? '';
 $input  = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $raw   = file_get_contents('php://input');
-    $input = json_decode($raw, true) ?? [];
-    if (!$action) $action = $input['action'] ?? '';
+    // multipart/form-data (file upload) — read from $_POST, not php://input
+    $ct = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (str_contains($ct, 'multipart/form-data')) {
+        $input = $_POST;
+        if (!$action) $action = $input['action'] ?? '';
+    } else {
+        $raw   = file_get_contents('php://input');
+        $input = json_decode($raw, true) ?? [];
+        if (!$action) $action = $input['action'] ?? '';
+    }
 }
 
 $pdo = getDB();
+
+// export_csv streams CSV — must be handled before the JSON Content-Type header takes effect
+if ($action === 'export_csv') {
+    requireAuth();
+    requireFamily();
+    apiExportCsv($pdo);
+}
 
 // Public (no auth, no CSRF)
 $public = ['login', 'register', 'shopping_list_pub', 'shopping_check_pub',
@@ -122,14 +137,17 @@ match ($action) {
     'meals_list'           => apiMealsList($pdo),
     'meals_add'            => apiMealsAdd($pdo, $input),
     'meals_update'         => apiMealsUpdate($pdo, $input),
-    'meals_delete'         => apiMealsDelete($pdo, $input),
+    'meals_delete'              => apiMealsDelete($pdo, $input),
+    'meal_ingredients_preview'  => apiMealIngredientsPreview($pdo),
     'nutrition_lookup'     => apiNutritionLookup($pdo),
     'schedule_get'         => apiScheduleGet($pdo),
     'schedule_set'         => apiScheduleSet($pdo, $input),
     'schedule_clear'       => apiScheduleClear($pdo, $input),
     'schedule_exception'   => apiScheduleException($pdo, $input),
     'schedule_copy'        => apiScheduleCopy($pdo, $input),
-    'schedule_autofill'    => apiScheduleAutofill($pdo, $input),
+    'schedule_autofill'       => apiScheduleAutofill($pdo, $input),
+    'schedule_update_extras'  => apiScheduleUpdateExtras($pdo, $input),
+    'schedule_random_replace' => apiScheduleRandomReplace($pdo, $input),
     'shopping_generate'    => apiShoppingGenerate($pdo, $input),
     'shopping_list'        => apiShoppingList($pdo),
     'shopping_check'       => apiShoppingCheck($pdo, $input),
@@ -147,5 +165,6 @@ match ($action) {
     'pantry_consume'        => apiPantryConsume($pdo, $input),
     'pantry_add_manual'     => apiPantryAddManual($pdo, $input),
     'pantry_clear'          => apiPantryClear($pdo),
+    'import_csv'            => apiImportCsv($pdo),
     default                => respondError('Azione non riconosciuta', 404),
 };
