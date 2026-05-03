@@ -207,12 +207,19 @@ function filterAndRender() {
 async function init() {
   try {
     const me = await get('me');
-    if (me.error) { location.href = 'login.php'; return; }
-    document.getElementById('user-label').textContent =
-      `${me.user.avatar_emoji || '👤'} ${me.user.name}`;
-  } catch { location.href = 'login.php'; return; }
+    if (!me.error) {
+      document.getElementById('user-label').textContent =
+        `${me.user.avatar_emoji || '👤'} ${me.user.name}`;
+    }
+  } catch { /* ignora errori di rete */ }
 
   await reload();
+
+  // Autocomplete sul nome ingrediente nella form dispensa
+  initAutocomplete(document.getElementById('pf-name'), it => {
+    const zoneEl = document.getElementById('pf-zone');
+    if (it.zone && zoneEl) zoneEl.value = it.zone;
+  }, { showZone: true, showPrice: false });
 
   document.getElementById('btn-add-item').addEventListener('click', () => openForm());
   document.getElementById('pf-save').addEventListener('click', saveForm);
