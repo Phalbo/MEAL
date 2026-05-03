@@ -307,6 +307,29 @@ function apiShoppingAddManual(PDO $pdo, array $in): never {
     ]);
 }
 
+function apiShoppingUpdateItem(PDO $pdo, array $in): never {
+    $familyId = $_SESSION['family_id'];
+    $id       = (int)($in['id'] ?? 0);
+    if (!$id) respondError('id obbligatorio');
+
+    $fields = []; $params = [];
+    if (array_key_exists('quantity', $in)) {
+        $fields[] = 'quantity=?';
+        $params[] = ($in['quantity'] !== '' && $in['quantity'] !== null) ? (float)$in['quantity'] : null;
+    }
+    if (array_key_exists('unit', $in)) {
+        $fields[] = 'unit=?';
+        $params[] = trim($in['unit'] ?? '') ?: null;
+    }
+    if (!$fields) respondError('Nessun campo da aggiornare');
+
+    $params[] = $id;
+    $params[] = $familyId;
+    $pdo->prepare("UPDATE shopping_items SET " . implode(',', $fields) . " WHERE id=? AND family_id=?")
+        ->execute($params);
+    respond(['success' => true]);
+}
+
 function apiShoppingClear(PDO $pdo, array $in): never {
     $familyId  = $_SESSION['family_id'];
     $weekStart = trim($in['week_start'] ?? '');

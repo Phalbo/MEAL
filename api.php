@@ -155,6 +155,7 @@ match ($action) {
     'shopping_reset_checks' => apiShoppingResetChecks($pdo, $input),
     'shopping_export_text'  => apiShoppingExportText($pdo),
     'shopping_add_manual'   => apiShoppingAddManual($pdo, $input),
+    'shopping_update_item'  => apiShoppingUpdateItem($pdo, $input),
     'shopping_clear'        => apiShoppingClear($pdo, $input),
     'shopping_list_pub'     => apiShoppingListPub($pdo),
     'shopping_check_pub'    => apiShoppingCheckPub($pdo, $input),
