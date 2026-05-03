@@ -155,6 +155,8 @@ async function loadSchedule() {
           is_exception: row.is_exception,
           side_dish: row.side_dish || null,
           extra_note: row.extra_note || null,
+          slot_kids: row.slot_kids || null,
+          portions_override: row.portions_override != null ? parseFloat(row.portions_override) : null,
         };
       });
     }
@@ -205,7 +207,17 @@ function renderSidebar(meals) {
         <div class="mc-name">${meal.name}${conflict ? ' <span title="Contiene allergeni">⚠️</span>' : ''}</div>
         <div class="mc-cal">${meal.cal_per_adult} kcal</div>
         <div class="mc-cat">${meal.category || ''}</div>
-      </div>`;
+      </div>
+      <button class="mc-star" title="${meal.is_favorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}">${meal.is_favorite ? '⭐' : '☆'}</button>`;
+    card.querySelector('.mc-star').addEventListener('click', async e => {
+      e.stopPropagation(); e.preventDefault();
+      const res = await post('meals_toggle_favorite', { id: meal.id });
+      if (!res.error) {
+        meal.is_favorite = meal.is_favorite ? 0 : 1;
+        e.currentTarget.textContent = meal.is_favorite ? '⭐' : '☆';
+        e.currentTarget.title = meal.is_favorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti';
+      }
+    });
     card.addEventListener('dragstart', e => {
       e.dataTransfer.setData('mealId',  String(meal.id));
       e.dataTransfer.setData('fromKey', '');
@@ -278,8 +290,8 @@ function bindControls() {
 
   document.getElementById('btn-copy-week').addEventListener('click', async () => {
     const fromWeek = addWeeks(state.week, -1);
-    if (!confirm(`Copiare il piano del ${formatWeekLabel(fromWeek)} in questa settimana?\nIl piano attuale verrà sovrascritto.`)) return;
-    const res = await post('schedule_copy', { from_week: fromWeek, to_week: state.week });
+    if (!confirm(`Copiare il piano del ${formatWeekLabel(fromWeek)} negli slot vuoti di questa settimana?`)) return;
+    const res = await post('schedule_copy_prev', { week_start: state.week });
     if (res.error) { showToast('⚠️ ' + res.error); return; }
     showToast(res.copied ? `✅ ${res.copied} piatti copiati` : '⚠️ Settimana precedente vuota');
     await loadSchedule(); renderCalendar(); updateBottom();

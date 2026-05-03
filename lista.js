@@ -73,16 +73,116 @@ function setBadge(online) {
   b.className   = 'live-badge' + (online ? ' live-on' : ' live-off');
 }
 
+// ── Costruisce una riga item con editing inline ──────────────────────────────
+function makeRow(it) {
+  const row = document.createElement('label');
+  row.className = 'lista-item' + (it.checked ? ' lista-checked' : '');
+  row.dataset.id = it.id;
+
+  // Checkbox
+  const chk = document.createElement('input');
+  chk.type = 'checkbox';
+  chk.className = 'lista-check';
+  chk.checked = !!it.checked;
+  chk.addEventListener('change', async () => {
+    const checked = chk.checked ? 1 : 0;
+    row.classList.toggle('lista-checked', !!checked);
+    it.checked = checked;
+    render();
+    await apiPost('shopping_check', { id: it.id, checked });
+  });
+
+  // Nome
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'lista-name';
+  nameSpan.textContent = it.ingredient_name;
+
+  // Qty + unit editabile
+  const qtySpan = document.createElement('span');
+  qtySpan.className = 'lista-qty lista-editable';
+  qtySpan.title = 'Clicca per modificare';
+  qtySpan.textContent = it.quantity ? `${it.quantity}${it.unit ? ' ' + it.unit : ''}` : (it.unit || '');
+  qtySpan.addEventListener('click', e => {
+    e.preventDefault();
+    const qInp = document.createElement('input');
+    qInp.type = 'number'; qInp.step = '0.1';
+    qInp.value = it.quantity != null ? it.quantity : '';
+    qInp.style.cssText = 'width:4.5rem;font-size:.82rem;padding:2px 4px';
+    qInp.placeholder = 'qtà';
+    const uInp = document.createElement('input');
+    uInp.type = 'text';
+    uInp.value = it.unit || '';
+    uInp.style.cssText = 'width:3rem;font-size:.82rem;padding:2px 4px;margin-left:2px';
+    uInp.placeholder = 'un.';
+    qtySpan.replaceWith(qInp);
+    qInp.after(uInp);
+    qInp.focus();
+    let saving = false;
+    const save = async () => {
+      if (saving) return; saving = true;
+      const qty  = qInp.value !== '' ? parseFloat(qInp.value) : null;
+      const unit = uInp.value.trim() || null;
+      it.quantity = qty; it.unit = unit;
+      await apiPost('shopping_update_item', { id: it.id, quantity: qty, unit });
+      render();
+    };
+    qInp.addEventListener('blur', () => setTimeout(save, 120));
+    uInp.addEventListener('blur', () => setTimeout(save, 120));
+    qInp.addEventListener('keydown', e => { if (e.key === 'Enter') { uInp.focus(); } if (e.key === 'Escape') render(); });
+    uInp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') render(); });
+  });
+
+  // Prezzo editabile (price_actual > price_est come fallback)
+  const priceActual = parseFloat(it.price_actual) || 0;
+  const priceEst    = parseFloat(it.price_est)    || 0;
+  const priceShown  = priceActual || priceEst;
+  const priceSpan   = document.createElement('span');
+  priceSpan.className = 'lista-price lista-editable' + (priceActual ? '' : ' lista-price-est');
+  priceSpan.title = priceActual ? 'Prezzo reale — clicca per modificare' : 'Prezzo stimato — clicca per inserire reale';
+  priceSpan.textContent = priceShown > 0 ? `€${priceShown.toFixed(2)}` : '';
+  priceSpan.addEventListener('click', e => {
+    e.preventDefault();
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.step = '0.01'; inp.min = '0';
+    inp.value = priceActual || '';
+    inp.style.cssText = 'width:5.5rem;font-size:.82rem;padding:2px 4px';
+    inp.placeholder = '€';
+    priceSpan.replaceWith(inp);
+    inp.focus();
+    const save = async () => {
+      const p = parseFloat(inp.value) || 0;
+      it.price_actual = p || null;
+      await apiPost('shopping_price_update', { id: it.id, price_actual: p });
+      render();
+    };
+    inp.addEventListener('blur', save);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') render(); });
+  });
+
+  row.append(chk, nameSpan, qtySpan, priceSpan);
+
+  if (it.checked && it.checked_by_emoji) {
+    const author = document.createElement('span');
+    author.className = 'lista-author';
+    author.title = 'Spuntato da';
+    author.textContent = it.checked_by_emoji;
+    row.appendChild(author);
+  }
+
+  return row;
+}
+
 function render() {
   const main = document.getElementById('lista-main');
   if (!items.length) {
     main.innerHTML = '<p class="lista-empty">Lista vuota — genera la lista dal planner o aggiungi articoli qui sopra.</p>';
+    document.getElementById('lista-total').textContent = '💰 €0.00';
     return;
   }
 
   document.getElementById('lista-week-label').textContent = formatWeek(WEEK);
   const total = items.reduce((s, i) => s + (parseFloat(i.price_actual) || parseFloat(i.price_est) || 0), 0);
-  document.getElementById('lista-total').textContent = total > 0 ? `💰 €${total.toFixed(2)}` : '';
+  document.getElementById('lista-total').textContent = `💰 €${total.toFixed(2)}`;
 
   // ordina: non spuntati prima, poi per zone_order
   const sorted = [...items].sort((a, b) => {
@@ -97,25 +197,11 @@ function render() {
   Object.entries(zones).forEach(([zone, zItems]) => {
     const section = document.createElement('section');
     section.className = 'lista-zone';
-    section.innerHTML = `<h2 class="lista-zone-title">${ZONE_EMOJI[zone] || '📦'} ${zone}</h2>`;
-    zItems.forEach(it => {
-      const row = document.createElement('label');
-      row.className  = 'lista-item' + (it.checked ? ' lista-checked' : '');
-      row.dataset.id = it.id;
-      row.innerHTML  = `
-        <input type="checkbox" class="lista-check" ${it.checked ? 'checked' : ''}>
-        <span class="lista-name">${it.ingredient_name}</span>
-        ${it.quantity ? `<span class="lista-qty">${it.quantity}${it.unit || ''}</span>` : ''}
-        ${it.checked && it.checked_by ? `<span class="lista-author" title="Spuntato da">${it.checked_by_emoji || '✓'}</span>` : ''}`;
-      row.querySelector('.lista-check').addEventListener('change', async function () {
-        const checked = this.checked ? 1 : 0;
-        row.classList.toggle('lista-checked', !!checked);
-        it.checked = checked;
-        render();
-        await apiPost('shopping_check', { id: it.id, checked });
-      });
-      section.appendChild(row);
-    });
+    const h2 = document.createElement('h2');
+    h2.className = 'lista-zone-title';
+    h2.textContent = `${ZONE_EMOJI[zone] || '📦'} ${zone}`;
+    section.appendChild(h2);
+    zItems.forEach(it => section.appendChild(makeRow(it)));
     main.appendChild(section);
   });
 }
@@ -186,6 +272,12 @@ document.getElementById('btn-clear-all').addEventListener('click', async () => {
   items = [];
   render();
 });
+
+// ── Autocomplete su "Aggiungi articolo" ──────────────────────────────────────
+initAutocomplete(document.getElementById('add-name'), it => {
+  if (it.zone) document.getElementById('add-zone').value = it.zone;
+  document.getElementById('add-qty').focus();
+}, { showZone: true, showPrice: true });
 
 // ── Cerca ricetta + preview ingredienti ─────────────────────────────────────
 let allMeals = [];

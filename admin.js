@@ -93,15 +93,23 @@ function addIngredientRow(ing = {}) {
   block.appendChild(flagsDiv);
 
   row.querySelector('.btn-remove-ing').addEventListener('click', () => block.remove());
-  row.querySelector('.ing-name').addEventListener('blur', async function() {
-    const name = this.value.trim();
-    if (!name) return;
-    const data = await get('nutrition_lookup', { name });
-    if (data.kcal_100g) showToast(`💡 ${name}: ${data.kcal_100g} kcal/100g — ${data.zone}`);
-  });
+
+  const nameInput = row.querySelector('.ing-name');
+  initAutocomplete(nameInput, it => {
+    // auto-compila unità di default (prima chiave di unit_weights, se presente)
+    const unitInput = row.querySelector('.ing-unit');
+    if (!unitInput.value && it.unit_weights) {
+      try {
+        const uw = typeof it.unit_weights === 'string' ? JSON.parse(it.unit_weights) : it.unit_weights;
+        const firstUnit = Object.keys(uw || {})[0];
+        if (firstUnit) unitInput.value = firstUnit;
+      } catch {}
+    }
+    if (it.kcal_100g) showToast(`💡 ${it.name}: ${it.kcal_100g} kcal/100g — ${it.zone || ''}`);
+  }, { showZone: true, showPrice: false });
 
   list.appendChild(block);
-  row.querySelector('.ing-name').focus();
+  nameInput.focus();
 }
 
 function getIngredients() {
