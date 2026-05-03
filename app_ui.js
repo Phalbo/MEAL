@@ -145,6 +145,8 @@ function makeCell(dayIndex, slotIndex) {
           schedule_id: result.schedule_id, exception_note: null,
           side_dish: result.side_dish || null,
           extra_note: result.extra_note || null,
+          slot_kids: result.slot_kids || null,
+          portions_override: result.portions_override != null ? parseFloat(result.portions_override) : null,
         };
         renderCalendar(); updateBottom();
       } else {
@@ -246,6 +248,60 @@ function makeCell(dayIndex, slotIndex) {
       extrasForm.classList.remove('active');
     });
     cell.appendChild(extrasWrap);
+
+    // ── +/- Porzioni ──────────────────────────────────
+    const portWrap = document.createElement('div');
+    portWrap.className = 'port-wrap';
+    const totalPort = getTotalPortions();
+    const curPort   = meal.portions_override ?? totalPort;
+    const portLabel = document.createElement('span');
+    portLabel.className = 'port-label';
+    portLabel.textContent = `🍽 ${curPort % 1 === 0 ? curPort : curPort.toFixed(1)}`;
+    const portMinus = document.createElement('button');
+    portMinus.className = 'port-btn'; portMinus.textContent = '−'; portMinus.title = 'Meno porzioni';
+    const portPlus  = document.createElement('button');
+    portPlus.className  = 'port-btn'; portPlus.textContent  = '+'; portPlus.title = 'Più porzioni';
+    const updatePort = async (delta) => {
+      const next = Math.max(0.5, parseFloat((curPort + delta).toFixed(1)));
+      state.schedule[key].portions_override = next;
+      await post('schedule_update_extras', {
+        week_start: state.week, day_index: dayIndex, slot: SLOTS[slotIndex],
+        portions_override: next,
+      });
+      renderCalendar();
+    };
+    portMinus.addEventListener('click', e => { e.stopPropagation(); updatePort(-0.5); });
+    portPlus.addEventListener('click',  e => { e.stopPropagation(); updatePort(+0.5); });
+    portWrap.append(portMinus, portLabel, portPlus);
+    cell.appendChild(portWrap);
+
+    // ── Slot bambini (solo pranzo) ────────────────────
+    if (slotIndex === 1) {
+      const kidsWrap = document.createElement('div');
+      kidsWrap.className = 'kids-wrap';
+      const kidsInput = document.createElement('input');
+      kidsInput.type = 'text';
+      kidsInput.className = 'kids-input';
+      kidsInput.placeholder = '🧒 Bambini…';
+      kidsInput.value = meal.slot_kids || '';
+      kidsInput.title = 'Piatto alternativo per i bambini';
+      let kidsTimer = null;
+      kidsInput.addEventListener('input', e => {
+        e.stopPropagation();
+        clearTimeout(kidsTimer);
+        kidsTimer = setTimeout(async () => {
+          const val = kidsInput.value.trim();
+          state.schedule[key].slot_kids = val || null;
+          await post('schedule_set_kids', {
+            week_start: state.week, day_index: dayIndex,
+            slot: SLOTS[slotIndex], slot_kids: val,
+          });
+        }, 600);
+      });
+      kidsInput.addEventListener('click', e => e.stopPropagation());
+      kidsWrap.appendChild(kidsInput);
+      cell.appendChild(kidsWrap);
+    }
 
   } else {
     cell.appendChild(el('span', 'cell-placeholder', '+'));
