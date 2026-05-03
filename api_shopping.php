@@ -17,7 +17,7 @@ function apiShoppingGenerate(PDO $pdo, array $in): never {
     foreach ($cs->fetchAll() as $r) $counts[(int)$r['meal_id']] = (int)$r['cnt'];
 
     if (!$counts) {
-        $pdo->prepare("DELETE FROM shopping_items WHERE family_id=? AND week_start=?")
+        $pdo->prepare("DELETE FROM shopping_items WHERE family_id=? AND week_start=? AND (is_manual IS NULL OR is_manual=0)")
             ->execute([$familyId, $weekStart]);
         respond([]);
     }
@@ -54,7 +54,6 @@ function apiShoppingGenerate(PDO $pdo, array $in): never {
             ];
         }
         if ($ing['quantity'])  $agg[$key]['quantity']  += (float)$ing['quantity'] * $factor;
-        if ($ing['price_est']) $agg[$key]['price_est'] += (float)$ing['price_est'] * $factor;
     }
 
     // ── Filtro ingredienti trascurabili ──────────────────────────────────────
@@ -76,13 +75,28 @@ function apiShoppingGenerate(PDO $pdo, array $in): never {
         if (in_array($unit, ['q.b.','qb','a piacere']) && !$item['quantity'])     { unset($agg[$k]); continue; }
     }
 
-    // prezzi storici (media ultimi 3)
+    // prezzo stimato da nutrition_db: toGrams(qty, unit) / 1000 * price_per_kg
+    $priceDbQ = $pdo->prepare("SELECT price_est FROM nutrition_db WHERE LOWER(name)=LOWER(?) AND price_est>0 LIMIT 1");
+    foreach ($agg as &$item) {
+        if (($item['quantity'] ?? 0) > 0) {
+            $priceDbQ->execute([$item['ingredient_name']]);
+            $pricePerKg = (float)($priceDbQ->fetchColumn() ?: 0);
+            if ($pricePerKg > 0) {
+                $grams = toGrams((float)$item['quantity'], $item['unit'] ?? '', $item['ingredient_name'], $pdo);
+                if ($grams !== null && $grams > 0)
+                    $item['price_est'] = round($grams / 1000.0 * $pricePerKg, 2);
+            }
+        }
+    }
+    unset($item);
+
+    // prezzi storici (media ultimi 3) — sovrascrivono la stima se disponibili
     $priceSt = $pdo->prepare("SELECT AVG(price) FROM
         (SELECT price FROM ingredient_prices
          WHERE family_id=? AND LOWER(ingredient_name)=LOWER(?) ORDER BY recorded_at DESC LIMIT 3)");
 
-    // ricostruzione lista
-    $pdo->prepare("DELETE FROM shopping_items WHERE family_id=? AND week_start=?")
+    // ricostruzione lista (preserva articoli manuali)
+    $pdo->prepare("DELETE FROM shopping_items WHERE family_id=? AND week_start=? AND (is_manual IS NULL OR is_manual=0)")
         ->execute([$familyId, $weekStart]);
 
     $ins = $pdo->prepare("INSERT INTO shopping_items
