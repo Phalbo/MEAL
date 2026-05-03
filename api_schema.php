@@ -337,6 +337,16 @@ function parseXlsxRecipes(string $path): array {
     return $recipes;
 }
 
+// ── Fallback ricette hardcoded (usato quando ricette.xlsx / ZipArchive non disponibili) ──
+function getHardcodedMeals(): array {
+    $raw = _unused_old_meals();
+    return array_map(fn($r) => [
+        'name'  => $r[0], 'emoji' => $r[1],
+        'catId' => $r[2], 'kcal'  => $r[3], 'note' => $r[4],
+        'ings'  => array_map(fn($i) => ['name'=>$i[0],'quantity'=>$i[1],'unit'=>$i[2]], $r[5]),
+    ], $raw);
+}
+
 // ── Seed al primo avvio — nutrition_db da JSON + ricette da XLSX ──────────────
 function seedIfEmpty(PDO $pdo): void {
     $pdo->exec('PRAGMA foreign_keys = OFF');
@@ -360,9 +370,10 @@ function seedIfEmpty(PDO $pdo): void {
         }
     }
 
-    // 2. Ricette di sistema da ricette.xlsx
+    // 2. Ricette di sistema da ricette.xlsx (fallback su hardcoded se xlsx non disponibile)
     if ((int)$pdo->query("SELECT COUNT(*) FROM meals WHERE is_system=1")->fetchColumn() === 0) {
         $recipes = parseXlsxRecipes(__DIR__ . '/ricette.xlsx');
+        if (empty($recipes)) $recipes = getHardcodedMeals();
         $insMeal = $pdo->prepare("INSERT OR IGNORE INTO meals
             (family_id,name,emoji,category_id,cal_per_adult,notes,is_system,created_by)
             VALUES (0,?,?,?,?,?,1,0)");
