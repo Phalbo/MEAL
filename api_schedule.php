@@ -95,6 +95,7 @@ function apiScheduleGet(PDO $pdo): never {
         SELECT s.id, s.day_index, s.slot, s.meal_id,
                s.is_exception, s.exception_note,
                s.side_dish, s.extra_note,
+               s.slot_kids, s.portions_override,
                m.name, m.emoji, m.cal_per_adult,
                mc.name as category
         FROM schedule s
@@ -105,6 +106,50 @@ function apiScheduleGet(PDO $pdo): never {
     ");
     $st->execute([$familyId, $weekStart]);
     respond($st->fetchAll());
+}
+
+function apiScheduleCopyPrev(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = $in['week_start'] ?? '';
+    if (!$weekStart) respondError('week_start obbligatorio');
+
+    $prevWeek = date('Y-m-d', strtotime($weekStart . ' -7 days'));
+
+    $src = $pdo->prepare("SELECT day_index, slot, meal_id, slot_kids FROM schedule
+        WHERE family_id=? AND week_start=? AND meal_id IS NOT NULL");
+    $src->execute([$familyId, $prevWeek]);
+    $rows = $src->fetchAll();
+    if (!$rows) respond(['copied' => 0]);
+
+    // INSERT OR IGNORE — non sovrascrive celle già occupate
+    $ins = $pdo->prepare("INSERT OR IGNORE INTO schedule
+        (family_id, week_start, day_index, slot, meal_id, slot_kids, created_by)
+        VALUES (?,?,?,?,?,?,?)");
+    $copied = 0;
+    foreach ($rows as $row) {
+        $ins->execute([$familyId, $weekStart, $row['day_index'], $row['slot'],
+                       $row['meal_id'], $row['slot_kids'], $_SESSION['user_id']]);
+        if ($pdo->lastInsertId()) $copied++;
+    }
+    respond(['copied' => $copied]);
+}
+
+function apiScheduleSetKids(PDO $pdo, array $in): never {
+    $familyId  = $_SESSION['family_id'];
+    $weekStart = $in['week_start'] ?? '';
+    $dayIndex  = isset($in['day_index']) ? (int)$in['day_index'] : null;
+    $slot      = $in['slot'] ?? '';
+    $slotKids  = isset($in['slot_kids']) && $in['slot_kids'] !== '' ? trim($in['slot_kids']) : null;
+    if (!$weekStart || $dayIndex === null || !$slot) respondError('week_start, day_index, slot obbligatori');
+
+    $pdo->prepare("
+        INSERT INTO schedule (family_id, week_start, day_index, slot, slot_kids, created_by)
+        VALUES (?,?,?,?,?,?)
+        ON CONFLICT(family_id, week_start, day_index, slot)
+        DO UPDATE SET slot_kids=excluded.slot_kids
+    ")->execute([$familyId, $weekStart, $dayIndex, $slot, $slotKids, $_SESSION['user_id']]);
+
+    respond(['success' => true]);
 }
 
 function apiScheduleSet(PDO $pdo, array $in): never {
@@ -197,16 +242,28 @@ function apiScheduleUpdateExtras(PDO $pdo, array $in): never {
     $slot      = $in['slot'] ?? '';
     if (!$weekStart || $dayIndex === null || !$slot) respondError('week_start, day_index, slot obbligatori');
 
-    $sideDish  = isset($in['side_dish'])  && $in['side_dish']  !== '' ? $in['side_dish']  : null;
-    $extraNote = isset($in['extra_note']) && $in['extra_note'] !== '' ? $in['extra_note'] : null;
+    $sideDish        = isset($in['side_dish'])        && $in['side_dish']        !== '' ? $in['side_dish']        : null;
+    $extraNote       = isset($in['extra_note'])       && $in['extra_note']       !== '' ? $in['extra_note']       : null;
+    $portionsOverride= array_key_exists('portions_override', $in)
+                       ? (($in['portions_override'] !== '' && $in['portions_override'] !== null) ? (float)$in['portions_override'] : null)
+                       : false; // false = non modificare
 
     // Upsert: se la cella non esiste ancora (nessun pasto) la creiamo vuota
-    $pdo->prepare("
-        INSERT INTO schedule (family_id, week_start, day_index, slot, side_dish, extra_note, created_by)
-        VALUES (?,?,?,?,?,?,?)
-        ON CONFLICT(family_id, week_start, day_index, slot)
-        DO UPDATE SET side_dish=excluded.side_dish, extra_note=excluded.extra_note
-    ")->execute([$familyId, $weekStart, $dayIndex, $slot, $sideDish, $extraNote, $_SESSION['user_id']]);
+    if ($portionsOverride !== false) {
+        $pdo->prepare("
+            INSERT INTO schedule (family_id, week_start, day_index, slot, side_dish, extra_note, portions_override, created_by)
+            VALUES (?,?,?,?,?,?,?,?)
+            ON CONFLICT(family_id, week_start, day_index, slot)
+            DO UPDATE SET side_dish=excluded.side_dish, extra_note=excluded.extra_note, portions_override=excluded.portions_override
+        ")->execute([$familyId, $weekStart, $dayIndex, $slot, $sideDish, $extraNote, $portionsOverride, $_SESSION['user_id']]);
+    } else {
+        $pdo->prepare("
+            INSERT INTO schedule (family_id, week_start, day_index, slot, side_dish, extra_note, created_by)
+            VALUES (?,?,?,?,?,?,?)
+            ON CONFLICT(family_id, week_start, day_index, slot)
+            DO UPDATE SET side_dish=excluded.side_dish, extra_note=excluded.extra_note
+        ")->execute([$familyId, $weekStart, $dayIndex, $slot, $sideDish, $extraNote, $_SESSION['user_id']]);
+    }
 
     respond(['success' => true]);
 }
@@ -266,7 +323,7 @@ function apiScheduleRandomReplace(PDO $pdo, array $in): never {
 
     $row = $pdo->prepare("SELECT m.id, m.name, m.emoji, m.cal_per_adult,
                mc.name as category, s.id as schedule_id,
-               s.side_dish, s.extra_note
+               s.side_dish, s.extra_note, s.slot_kids, s.portions_override
         FROM meals m
         LEFT JOIN meal_categories mc ON mc.id = m.category_id
         LEFT JOIN schedule s ON s.meal_id = m.id

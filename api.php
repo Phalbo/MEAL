@@ -148,6 +148,8 @@ match ($action) {
     'schedule_autofill'       => apiScheduleAutofill($pdo, $input),
     'schedule_update_extras'  => apiScheduleUpdateExtras($pdo, $input),
     'schedule_random_replace' => apiScheduleRandomReplace($pdo, $input),
+    'schedule_copy_prev'      => apiScheduleCopyPrev($pdo, $input),
+    'schedule_set_kids'       => apiScheduleSetKids($pdo, $input),
     'shopping_generate'    => apiShoppingGenerate($pdo, $input),
     'shopping_list'        => apiShoppingList($pdo),
     'shopping_check'       => apiShoppingCheck($pdo, $input),
