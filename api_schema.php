@@ -155,6 +155,14 @@ function initSchema(PDO $pdo): void {
     // Migration: schedule — contorno e nota extra per cella
     try { $pdo->exec("ALTER TABLE schedule ADD COLUMN side_dish TEXT DEFAULT NULL"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE schedule ADD COLUMN extra_note TEXT DEFAULT NULL"); } catch (Exception $e) {}
+    // Migration: schedule — piatto alternativo bambini + override porzioni
+    try { $pdo->exec("ALTER TABLE schedule ADD COLUMN slot_kids TEXT DEFAULT NULL"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE schedule ADD COLUMN portions_override REAL DEFAULT NULL"); } catch (Exception $e) {}
+    // Migration: meals — contatore utilizzo e preferiti
+    try { $pdo->exec("ALTER TABLE meals ADD COLUMN use_count INTEGER DEFAULT 0"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE meals ADD COLUMN is_favorite INTEGER DEFAULT 0"); } catch (Exception $e) {}
+    // Migration: nutrition_db — prezzo stimato per 100g
+    try { $pdo->exec("ALTER TABLE nutrition_db ADD COLUMN price_est REAL DEFAULT 0"); } catch (Exception $e) {}
 
     // Indici per query frequenti (in try/catch: sicuri su ogni versione DB)
     try { $pdo->exec("CREATE INDEX IF NOT EXISTS idx_schedule_family_week ON schedule (family_id, week_start)"); } catch (Exception $e) {}
@@ -240,7 +248,7 @@ function initSchema(PDO $pdo): void {
         ('acqua ossigenata',0,'casalinghi')
     ");
 
-    try { seedSystemMeals($pdo); } catch (Exception $e) {}
+    try { seedIfEmpty($pdo); } catch (Exception $e) {}
 }
 
 function detectZoneStatic(string $name): string {
@@ -271,23 +279,114 @@ function detectZoneStatic(string $name): string {
     return 'scaffali';
 }
 
-function seedSystemMeals(PDO $pdo): void {
-    $existing = (int)$pdo->query("SELECT COUNT(*) FROM meals WHERE is_system=1")->fetchColumn();
-    if ($existing > 0) return;
+// ── Parse ricette.xlsx → array di ricette ────────────────────────────────────
+function parseXlsxRecipes(string $path): array {
+    if (!file_exists($path)) return [];
+    $zip = new ZipArchive();
+    if ($zip->open($path) !== true) return [];
+    $xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+    $zip->close();
+    if (!$xml) return [];
 
-    // FK off durante il seed: family_id=0 non esiste in families
+    $dom = new DOMDocument();
+    $dom->loadXML($xml);
+    $xp = new DOMXPath($dom);
+    $xp->registerNamespace('ss', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+
+    $catMap = ['Colazione'=>1,'Primo'=>2,'Secondo'=>3,'Contorno'=>4,'Altro'=>5];
+    $recipes = [];
+    $rowNodes = $xp->query('//ss:sheetData/ss:row');
+    $first = true;
+    foreach ($rowNodes as $row) {
+        if ($first) { $first = false; continue; } // skip header
+        $cols = [];
+        foreach ($xp->query('ss:c', $row) as $cell) {
+            $t = $cell->getAttribute('t');
+            $val = '';
+            if ($t === 'inlineStr') {
+                foreach ($xp->query('.//ss:t', $cell) as $tn) $val .= $tn->nodeValue;
+            } else {
+                $vn = $xp->query('ss:v', $cell);
+                if ($vn->length) $val = $vn->item(0)->nodeValue;
+            }
+            // get column letter from r attribute (e.g. B2 → B)
+            $ref = $cell->getAttribute('r');
+            $col = preg_replace('/[0-9]/', '', $ref);
+            $cols[$col] = $val;
+        }
+        $name  = trim($cols['B'] ?? '');
+        if (!$name) continue;
+        $emoji = trim($cols['C'] ?? '🍽️') ?: '🍽️';
+        $catNm = trim($cols['D'] ?? 'Altro');
+        $catId = $catMap[$catNm] ?? 5;
+        $kcal  = (int)($cols['E'] ?? 0);
+        $note  = trim($cols['G'] ?? '');
+        $ings  = [];
+        foreach (explode("\n", $cols['F'] ?? '') as $line) {
+            $parts = array_map('trim', explode('|', $line));
+            if (count($parts) >= 2) {
+                $ings[] = [
+                    'name'     => $parts[0],
+                    'quantity' => is_numeric($parts[1]) ? (float)$parts[1] : null,
+                    'unit'     => $parts[2] ?? null,
+                ];
+            }
+        }
+        $recipes[] = compact('name','emoji','catId','kcal','note','ings');
+    }
+    return $recipes;
+}
+
+// ── Seed al primo avvio — nutrition_db da JSON + ricette da XLSX ──────────────
+function seedIfEmpty(PDO $pdo): void {
     $pdo->exec('PRAGMA foreign_keys = OFF');
 
-    $insMeal = $pdo->prepare("
-        INSERT OR IGNORE INTO meals (family_id,name,emoji,category_id,cal_per_adult,notes,is_system,created_by)
-        VALUES (0,?,?,?,?,?,1,0)
-    ");
-    $insIng = $pdo->prepare("
-        INSERT OR IGNORE INTO meal_ingredients (meal_id,name,quantity,unit,zone)
-        VALUES (?,?,?,?,?)
-    ");
+    // 1. nutrition_db da nutrition.json (idempotente: INSERT OR IGNORE)
+    // Controlla un ingrediente tipico del JSON per capire se il seed è già stato fatto
+    $jsonPath = __DIR__ . '/nutrition.json';
+    if (file_exists($jsonPath) &&
+        !(int)$pdo->query("SELECT COUNT(*) FROM nutrition_db WHERE name='aglio'")->fetchColumn()) {
+        $items = json_decode(file_get_contents($jsonPath), true) ?? [];
+        $ins = $pdo->prepare("INSERT OR IGNORE INTO nutrition_db
+            (name, kcal_100g, zone, aliases, unit_weights) VALUES (?,?,?,?,?)");
+        foreach ($items as $it) {
+            $ins->execute([
+                $it['name'],
+                (float)($it['kcal'] ?? 0),
+                $it['zone'] ?? 'scaffali',
+                json_encode($it['aliases'] ?? [], JSON_UNESCAPED_UNICODE),
+                json_encode($it['unit_weights'] ?? [], JSON_UNESCAPED_UNICODE),
+            ]);
+        }
+    }
 
-    $meals = [
+    // 2. Ricette di sistema da ricette.xlsx
+    if ((int)$pdo->query("SELECT COUNT(*) FROM meals WHERE is_system=1")->fetchColumn() === 0) {
+        $recipes = parseXlsxRecipes(__DIR__ . '/ricette.xlsx');
+        $insMeal = $pdo->prepare("INSERT OR IGNORE INTO meals
+            (family_id,name,emoji,category_id,cal_per_adult,notes,is_system,created_by)
+            VALUES (0,?,?,?,?,?,1,0)");
+        $insIng = $pdo->prepare("INSERT OR IGNORE INTO meal_ingredients
+            (meal_id,name,quantity,unit,zone) VALUES (?,?,?,?,?)");
+        foreach ($recipes as $r) {
+            $insMeal->execute([$r['name'],$r['emoji'],$r['catId'],$r['kcal'],$r['note']?: null]);
+            $mealId = (int)$pdo->lastInsertId();
+            if (!$mealId) continue;
+            foreach ($r['ings'] as $ing) {
+                $zone = $ing['name'] ? detectZoneStatic($ing['name']) : 'scaffali';
+                $insIng->execute([$mealId,$ing['name'],$ing['quantity'],$ing['unit'],$zone]);
+            }
+        }
+    }
+
+    $pdo->exec('PRAGMA foreign_keys = ON');
+}
+
+// kept for back-compat — now delegates to seedIfEmpty
+function seedSystemMeals(PDO $pdo): void { seedIfEmpty($pdo); }
+
+// ── OLD hardcoded meal list (kept below, now unused) ─────────────────────────
+function _unused_old_meals(): array { return [
         ['Spaghetti al sugo','🍝',2,520,'',[['Spaghetti',320,'g'],['Passata di pomodoro',400,'g'],['Aglio',2,'spicchi'],['Olio EVO',3,'cucchiai'],['Basilico',1,'mazzo']]],
         ['Carbonara','🥚',2,650,'',[['Spaghetti',320,'g'],['Guanciale',150,'g'],['Uova',4,'pz'],['Pecorino Romano',80,'g'],['Pepe nero',1,'cucchiaino']]],
         ['Risotto ai funghi','🍄',2,490,'',[['Riso Carnaroli',320,'g'],['Funghi porcini',200,'g'],['Cipolla',1,'pz'],['Vino bianco',1,'bicchiere'],['Parmigiano',50,'g'],['Burro',30,'g'],['Brodo vegetale',1000,'ml']]],
@@ -406,17 +505,5 @@ function seedSystemMeals(PDO $pdo): void {
         ['Spaghetti alle vongole','🐚',2,490,'',[['Spaghetti',320,'g'],['Vongole',600,'g'],['Aglio',3,'spicchi'],['Olio EVO',4,'cucchiai'],['Vino bianco',100,'ml'],['Prezzemolo',1,'mazzo']]],
         ['Pasta alla carbonara di zucchine','🥒',2,520,'Versione vegetariana',[['Spaghetti',320,'g'],['Zucchine',3,'pz'],['Uova',3,'pz'],['Pecorino Romano',60,'g'],['Olio EVO',2,'cucchiai']]],
         ['Tiella di riso patate e cozze','🦪',2,460,'Barese',[['Riso Carnaroli',250,'g'],['Patate',300,'g'],['Cozze',500,'g'],['Pomodori',3,'pz'],['Cipolla',1,'pz'],['Olio EVO',4,'cucchiai'],['Parmigiano',40,'g']]],
-    ];
-
-    foreach ($meals as [$name,$emoji,$cat,$kcal,$note,$ings]) {
-        $insMeal->execute([$name,$emoji,$cat,$kcal,$note ?: null]);
-        $mealId = (int)$pdo->lastInsertId();
-        if (!$mealId) continue;
-        foreach ($ings as [$iname,$iqty,$iunit]) {
-            $zone = $iname ? detectZoneStatic($iname) : 'scaffali';
-            $insIng->execute([$mealId, $iname, $iqty, $iunit ?: null, $zone]);
-        }
-    }
-
-    $pdo->exec('PRAGMA foreign_keys = ON');
+    ]; // end _unused_old_meals
 }
