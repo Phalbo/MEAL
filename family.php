@@ -188,7 +188,7 @@ document.getElementById('btn-add-profile').addEventListener('click', async () =>
 });
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
-  await post('logout'); location.href = 'login.php';
+  await post('logout'); location.reload();
 });
 
 document.addEventListener('DOMContentLoaded', load);

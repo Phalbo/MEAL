@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'logout', csrf_token: CSRF() }),
     });
-    location.href = 'login.php';
+    location.reload();
   });
 
   document.getElementById('btn-menu')?.addEventListener('click', () => {});

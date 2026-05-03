@@ -375,7 +375,7 @@ document.getElementById('add-name').addEventListener('keydown', e => {
 });
 
 document.getElementById('btn-logout')?.addEventListener('click', async () => {
-  await post('logout'); location.href = 'login.php';
+  await post('logout'); location.reload();
 });
 
 loadItems();

@@ -21,10 +21,9 @@ const state = {
 async function get(action, params = {}) {
   const qs  = new URLSearchParams({ action, ...params });
   const res = await fetch(`${API}?${qs}`);
-  if (!res.ok && res.status !== 200) throw new Error(`HTTP ${res.status}`);
   const text = await res.text();
   try { return JSON.parse(text); }
-  catch { throw new Error('Risposta non JSON: ' + text.slice(0, 120)); }
+  catch { throw new Error(`HTTP ${res.status} — risposta non JSON: ` + text.slice(0, 200)); }
 }
 
 async function post(action, data = {}) {
@@ -70,11 +69,17 @@ async function init() {
     document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:1rem">
       <p style="font-size:1.1rem;color:#c84b2d">⚠️ Impossibile contattare il server.</p>
       <pre style="font-size:.75rem;color:#666;background:#f5f5f5;padding:.75rem;border-radius:8px;max-width:500px;overflow:auto">${e.message}</pre>
-      <a href="login.php" style="color:#FF6B4A">→ Torna al login</a>
+      <button onclick="location.reload()" style="padding:.5rem 1rem;background:#FF6B4A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.9rem">🔄 Riprova</button>
     </div>`;
     return;
   }
-  if (me.error) { location.href = 'login.php'; return; }
+  if (me.error) {
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:1rem">
+      <p style="font-size:1.1rem;color:#c84b2d">⚠️ Errore API: ${me.error}</p>
+      <button onclick="location.reload()" style="padding:.5rem 1rem;background:#FF6B4A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.9rem">🔄 Riprova</button>
+    </div>`;
+    return;
+  }
 
   state.user   = me.user;
   state.family = me.family;
@@ -266,7 +271,7 @@ function bindControls() {
   });
   document.getElementById('btn-logout').addEventListener('click', async () => {
     await post('logout');
-    location.href = 'login.php';
+    location.reload();
   });
   document.getElementById('btn-random').addEventListener('click', () => {
     if (!state.meals.length) return;

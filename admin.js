@@ -27,7 +27,7 @@ async function init() {
   bindForm();
   addIngredientRow();
   document.getElementById('btn-logout').addEventListener('click', async () => {
-    await post('logout'); location.href = 'login.php';
+    await post('logout'); location.reload();
   });
 }
 

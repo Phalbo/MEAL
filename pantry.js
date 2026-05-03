@@ -240,7 +240,7 @@ async function init() {
   });
   document.getElementById('btn-logout').addEventListener('click', async () => {
     await post('logout');
-    location.href = 'login.php';
+    location.reload();
   });
 
   // Mobile hamburger (no sidebar here, just prevent error)
