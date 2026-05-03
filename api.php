@@ -10,6 +10,7 @@ require_once __DIR__ . '/api_schedule.php';
 require_once __DIR__ . '/api_shopping.php';
 require_once __DIR__ . '/api_pantry.php';
 require_once __DIR__ . '/api_export_import.php';
+require_once __DIR__ . '/api_nutrition.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -144,6 +145,11 @@ match ($action) {
     'meals_delete'              => apiMealsDelete($pdo, $input),
     'meal_ingredients_preview'  => apiMealIngredientsPreview($pdo),
     'nutrition_lookup'     => apiNutritionLookup($pdo),
+    'nutrition_search'     => apiNutritionSearch($pdo),
+    'nutrition_list'       => apiNutritionList($pdo),
+    'nutrition_update'     => apiNutritionUpdate($pdo, $input),
+    'nutrition_add'        => apiNutritionAdd($pdo, $input),
+    'nutrition_delete'     => apiNutritionDelete($pdo, $input),
     'schedule_get'         => apiScheduleGet($pdo),
     'schedule_set'         => apiScheduleSet($pdo, $input),
     'schedule_clear'       => apiScheduleClear($pdo, $input),
