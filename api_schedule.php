@@ -184,6 +184,9 @@ function apiScheduleSet(PDO $pdo, array $in): never {
                       is_exception=0, exception_note=NULL
     ")->execute([$familyId, $weekStart, $dayIndex, $slot, $mealId, $userId]);
 
+    // incrementa use_count
+    $pdo->prepare("UPDATE meals SET use_count = use_count + 1 WHERE id=?")->execute([$mealId]);
+
     respond(['success' => true]);
 }
 

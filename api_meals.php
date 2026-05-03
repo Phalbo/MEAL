@@ -131,6 +131,40 @@ function apiMealIngredientsPreview(PDO $pdo): never {
     respond(['meal' => $meal, 'ingredients' => $ings->fetchAll()]);
 }
 
+function apiMealsToggleFavorite(PDO $pdo, array $in): never {
+    $familyId = $_SESSION['family_id'];
+    $id       = (int)($in['id'] ?? 0);
+    if (!$id) respondError('id obbligatorio');
+
+    $row = $pdo->prepare("SELECT is_favorite FROM meals WHERE id=? AND (family_id=? OR is_system=1)");
+    $row->execute([$id, $familyId]);
+    $meal = $row->fetch();
+    if (!$meal) respondError('Piatto non trovato', 404);
+
+    $newVal = $meal['is_favorite'] ? 0 : 1;
+    $pdo->prepare("UPDATE meals SET is_favorite=? WHERE id=?")->execute([$newVal, $id]);
+    respond(['success' => true, 'is_favorite' => $newVal]);
+}
+
+function apiMealsSearchByIngredient(PDO $pdo): never {
+    $familyId = $_SESSION['family_id'];
+    $q        = trim($_GET['ingredient'] ?? '');
+    if (!$q) respondError('ingredient obbligatorio');
+
+    $st = $pdo->prepare("
+        SELECT DISTINCT m.id, m.name, m.emoji, m.cal_per_adult, mc.name as category
+        FROM meals m
+        LEFT JOIN meal_categories mc ON mc.id = m.category_id
+        JOIN meal_ingredients mi ON mi.meal_id = m.id
+        WHERE (m.family_id=? OR m.is_system=1)
+          AND LOWER(mi.name) LIKE ?
+        ORDER BY m.name
+        LIMIT 30
+    ");
+    $st->execute([$familyId, '%' . mb_strtolower($q) . '%']);
+    respond($st->fetchAll());
+}
+
 // ── Helper: salva array ingredienti ──────────────────────────────────────────
 function saveIngredients(PDO $pdo, int $mealId, array $ingredients): void {
     $st = $pdo->prepare("INSERT INTO meal_ingredients (meal_id,name,quantity,unit,price_est,intolerance_flags,zone) VALUES (?,?,?,?,?,?,?)");

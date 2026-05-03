@@ -139,6 +139,8 @@ match ($action) {
     'meals_update'         => apiMealsUpdate($pdo, $input),
     'meals_delete'              => apiMealsDelete($pdo, $input),
     'meal_ingredients_preview'  => apiMealIngredientsPreview($pdo),
+    'meals_toggle_favorite'     => apiMealsToggleFavorite($pdo, $input),
+    'meals_search_by_ingredient'=> apiMealsSearchByIngredient($pdo),
     'nutrition_lookup'     => apiNutritionLookup($pdo),
     'schedule_get'         => apiScheduleGet($pdo),
     'schedule_set'         => apiScheduleSet($pdo, $input),
