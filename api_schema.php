@@ -248,7 +248,7 @@ function initSchema(PDO $pdo): void {
         ('acqua ossigenata',0,'casalinghi')
     ");
 
-    try { seedIfEmpty($pdo); } catch (Exception $e) {}
+    try { seedIfEmpty($pdo); } catch (\Throwable $e) {}
 }
 
 function detectZoneStatic(string $name): string {
@@ -281,7 +281,7 @@ function detectZoneStatic(string $name): string {
 
 // ── Parse ricette.xlsx → array di ricette ────────────────────────────────────
 function parseXlsxRecipes(string $path): array {
-    if (!file_exists($path)) return [];
+    if (!file_exists($path) || !class_exists('ZipArchive')) return [];
     $zip = new ZipArchive();
     if ($zip->open($path) !== true) return [];
     $xml = $zip->getFromName('xl/worksheets/sheet1.xml');
