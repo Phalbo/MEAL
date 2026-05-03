@@ -13,6 +13,24 @@ require_once __DIR__ . '/api_export_import.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+// ── Dev mode: utente di default senza login ───────────────────────────────────
+function bootSession(PDO $pdo): void {
+    if (empty($_SESSION['user_id'])) {
+        // Assicura che esista l'utente/famiglia default
+        $pdo->exec('PRAGMA foreign_keys = OFF');
+        $pdo->exec("INSERT OR IGNORE INTO users (id,email,password,name,role)
+                    VALUES (1,'admin@local','',  'Admin','admin')");
+        $pdo->exec("INSERT OR IGNORE INTO families (id,name,owner_id,invite_code)
+                    VALUES (1,'Famiglia',1,'LOCAL0001')");
+        $pdo->exec("INSERT OR IGNORE INTO family_members (family_id,user_id) VALUES (1,1)");
+        $pdo->exec('PRAGMA foreign_keys = ON');
+        $_SESSION['user_id']   = 1;
+        $_SESSION['family_id'] = 1;
+    }
+    if (empty($_SESSION['family_id'])) $_SESSION['family_id'] = 1;
+    if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function respond(mixed $data, int $status = 200): never {
     http_response_code($status);
@@ -23,11 +41,11 @@ function respondError(string $msg, int $status = 400): never {
     respond(['error' => $msg], $status);
 }
 function requireAuth(): void {
-    if (empty($_SESSION['user_id'])) respondError('Non autenticato', 401);
+    if (empty($_SESSION['user_id'])) $_SESSION['user_id'] = 1;
 }
 function requireFamily(): void {
-    requireAuth();
-    if (empty($_SESSION['family_id'])) respondError('Nessuna famiglia', 403);
+    if (empty($_SESSION['user_id']))   $_SESSION['user_id']   = 1;
+    if (empty($_SESSION['family_id'])) $_SESSION['family_id'] = 1;
 }
 function getCsrfToken(): string {
     if (empty($_SESSION['csrf_token']))
@@ -35,8 +53,7 @@ function getCsrfToken(): string {
     return $_SESSION['csrf_token'];
 }
 function verifyCsrf(string $token): void {
-    if (!hash_equals(getCsrfToken(), $token))
-        respondError('CSRF token non valido', 403);
+    // CSRF bypassato in dev mode — il token è comunque letto ma non verificato
 }
 
 // ── DB + Schema ───────────────────────────────────────────────────────────────
@@ -81,7 +98,6 @@ function detectZone(string $name): string {
 $action = $_GET['action'] ?? '';
 $input  = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // multipart/form-data (file upload) — read from $_POST, not php://input
     $ct = $_SERVER['CONTENT_TYPE'] ?? '';
     if (str_contains($ct, 'multipart/form-data')) {
         $input = $_POST;
@@ -94,24 +110,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pdo = getDB();
+bootSession($pdo);
 
 // export_csv streams CSV — must be handled before the JSON Content-Type header takes effect
 if ($action === 'export_csv') {
-    requireAuth();
-    requireFamily();
     apiExportCsv($pdo);
 }
-
-// Public (no auth, no CSRF)
-$public = ['login', 'register', 'shopping_list_pub', 'shopping_check_pub',
-           'password_reset_request', 'password_reset_do'];
-// Auth required but no family needed
-$noFamily = ['logout', 'me', 'csrf_token', 'family_create', 'family_join'];
-
-if (!in_array($action, $public)) requireAuth();
-if (!in_array($action, array_merge($public, $noFamily))) requireFamily();
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !in_array($action, $public))
-    verifyCsrf($input['csrf_token'] ?? '');
 
 // ── Router ────────────────────────────────────────────────────────────────────
 match ($action) {
